@@ -67,7 +67,7 @@ Rushikesh Gadekar
 I'm **Rushikesh Gadekar**, a passionate cybersecurity enthusiast 🛡️, ethical hacker 💻, bug bounty hunter 🐞, and a cyber investigator.  
 I enjoy diving deep into security systems, finding vulnerabilities, and helping improve digital safety through open-source tools and ethical practices.
 
-📫 Contact Me:  
-🔹 GitHub: [93rushikesh](https://github.com/93rushikesh)  
-🔹 Telegram: [@CIPHER_372](https://t.me/CIPHER_372)
-🔹📸Instagram: @_gadekar_rushikesh
+## 📫 Contact Me:  
+- 🐙 GitHub: [93rushikesh](https://github.com/93rushikesh)  
+- 💬 Telegram: [@CIPHER_372](https://t.me/CIPHER_372)  
+- 📸 Instagram: [@_gadekar_rushikesh](https://instagram.com/_gadekar_rushikesh)
