@@ -7,13 +7,12 @@ Performs:
 - HTTP headers extraction
 - WHOIS lookup
 
-## ⚙️ Requirements
-
-Install dependencies:
+Installation Process:
 
 ```bash
+git clone https://github.com/93rushikesh/website-recon-tool.git
+cd website-recon-tool
 pip install -r requirements.txt
-## 🚀 Usage
-
-```bash
-python website_recon.py
+sudo pip install -r requirements.txt
+python3 website_recon.py
+Enter Domain (e.g. example.com): google.com
