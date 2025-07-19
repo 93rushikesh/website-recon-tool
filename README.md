@@ -1,43 +1,42 @@
-🔍 Website Recon Tool
+# 🔍 Website Recon Tool
+
 A simple and effective information gathering tool for reconnaissance of websites.
 
 This tool performs:
+- 🔸 Subdomain enumeration *(Coming Soon)*
+- 🔸 Port scanning (ports 80, 443)
+- 🔸 HTTP headers extraction
+- 🔸 WHOIS lookup
+- 🔸 IP address & geolocation
+- 🔸 Technology stack detection
+- 🔸 Basic firewall detection *(via server headers)*
 
-🔸 Subdomain enumeration (Coming Soon)
+---
 
-🔸 Port scanning (ports 80, 443)
+## ⚙️ Installation
 
-🔸 HTTP headers extraction
-
-🔸 WHOIS lookup
-
-🔸 IP address & geolocation
-
-🔸 Technology stack detection
-
-🔸 Basic firewall detection (via server headers)
-
-⚙️ Installation
 Clone the repository and install dependencies:
 
+```bash
 git clone https://github.com/93rushikesh/website-recon-tool.git
 cd website-recon-tool
 pip install -r requirements.txt
+```
+If you're using Linux and need sudo:
 
-(For Linux users with sudo):
-
+```bash
 sudo pip install -r requirements.txt
-
-🚀 Usage
+```
+## 🚀 Usage
 Run the tool:
-
+```bash
 python website_recon.py
-
+```
 Then enter the target domain:
-
 Enter Domain (e.g. example.com): google.com
 
-🧾 Output Example
+## 🧾 Output Example
+
 ✅ Subdomain suggestions
 
 🔓 Open ports (80, 443)
@@ -53,14 +52,21 @@ Enter Domain (e.g. example.com): google.com
 🛡️ Firewall clues (based on headers)
 
 📦 Requirements
+Listed in requirements.txt:
 requests
-
 python-whois
-
-Installed via:
-
+Install with:
+```bash
 pip install -r requirements.txt
+```
+## 👨‍💻 Author  
+Rushikesh Gadekar  
+**GitHub:** [https://github.com/93rushikesh](https://github.com/93rushikesh)
 
-👨‍💻 Author
-Rushikesh Gadekar
-GitHub: https://github.com/93rushikesh
+## 🙋‍♂️ About Me  
+I'm **Rushikesh Gadekar**, a passionate cybersecurity enthusiast 🛡️, ethical hacker 💻, bug bounty hunter 🐞, and a cyber investigator.  
+I enjoy diving deep into security systems, finding vulnerabilities, and helping improve digital safety through open-source tools and ethical practices.
+
+📫 Contact Me:  
+🔹 GitHub: [93rushikesh](https://github.com/93rushikesh)  
+🔹 Telegram: [@CIPHER_372](https://t.me/CIPHER_372)
