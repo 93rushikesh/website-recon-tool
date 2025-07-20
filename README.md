@@ -3,7 +3,7 @@
 A simple and effective information gathering tool for reconnaissance of websites.
 
 This tool performs:
-- 🔸 Subdomain enumeration *(Coming Soon)*
+- 🔸 Subdomain enumeration
 - 🔸 Port scanning (ports 80, 443)
 - 🔸 HTTP headers extraction
 - 🔸 WHOIS lookup
@@ -37,7 +37,7 @@ Enter Domain (e.g. example.com): google.com
 
 ## 🧾 Output Example
 
-✅ Subdomain suggestions
+✅ Subdomains
 
 🔓 Open ports (80, 443)
 
