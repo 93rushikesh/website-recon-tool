@@ -1,134 +1,121 @@
-import socket
 import requests
+import socket
 import whois
 import json
+import os
 import re
-from urllib.parse import urlparse
 
-# Subdomain Enumeration
-def get_subdomains(domain):
-    return [f"http://{sub}.{domain}" for sub in ["www", "mail", "ftp", "webmail", "cpanel"]]
+def get_subdomains_crtsh(domain):
+    print("\n[+] Subdomain Enumeration (via crt.sh):")
+    url = f"https://crt.sh/?q=%25.{domain}&output=json"
+    try:
+        res = requests.get(url, timeout=10)
+        entries = res.json()
+        subdomains = set()
+        for entry in entries:
+            name_value = entry['name_value']
+            for sub in name_value.split('\n'):
+                if domain in sub:
+                    subdomains.add(sub.strip())
+        if subdomains:
+            for sub in sorted(subdomains):
+                print(f"  [FOUND] http://{sub}")
+        else:
+            print("  [-] No subdomains found.")
+    except Exception as e:
+        print("  [-] Error in fetching subdomains:", e)
 
-# Port Scanning
-def scan_ports(domain):
-    open_ports = []
-    for port in [80, 443, 21, 22, 25, 3306]:
-        try:
-            sock = socket.create_connection((domain, port), timeout=2)
-            open_ports.append(port)
+def port_scan(domain):
+    print("\n[+] Port Scanning:")
+    common_ports = [80, 443, 21, 22, 25, 8080]
+    try:
+        ip = socket.gethostbyname(domain)
+        for port in common_ports:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(1)
+            result = sock.connect_ex((ip, port))
+            if result == 0:
+                print(f"  [OPEN] Port {port}")
             sock.close()
-        except:
-            pass
-    return open_ports
+    except Exception as e:
+        print("  [-] Error in port scanning:", e)
 
-# HTTP Headers Fetch
-def get_http_headers(domain):
+def get_ip(domain):
+    print("\n[+] IP Address:")
     try:
-        response = requests.get(f"https://{domain}", timeout=5)
-        return response.headers, response.text
+        ip = socket.gethostbyname(domain)
+        print(f"  IP: {ip}")
+        return ip
     except:
-        return {}, ""
+        print("  [-] Could not resolve IP.")
+        return None
 
-# IP Address
-def get_ip_address(domain):
+def geoip_lookup(ip):
+    print("\n[+] IP Geolocation:")
     try:
-        return socket.gethostbyname(domain)
-    except:
-        return "N/A"
+        res = requests.get(f"http://ip-api.com/json/{ip}", timeout=5)
+        data = res.json()
+        print(f"  Country : {data.get('country')}")
+        print(f"  Region  : {data.get('regionName')}")
+        print(f"  City    : {data.get('city')}")
+        print(f"  Org     : {data.get('org')}")
+    except Exception as e:
+        print("  [-] GeoIP Lookup failed:", e)
 
-# IP Geolocation
-def get_ip_geolocation(ip):
+def http_headers(domain):
+    print("\n[+] HTTP Headers:")
     try:
-        response = requests.get(f"https://ipinfo.io/{ip}/json", timeout=5)
-        return response.json()
+        res = requests.get(f"http://{domain}", timeout=5)
+        for header, value in res.headers.items():
+            print(f"  {header}: {value}")
+    except Exception as e:
+        print("  [-] Error fetching headers:", e)
+
+def tech_detect(domain):
+    print("\n[+] Technology Detection:")
+    try:
+        res = requests.get(f"http://{domain}", timeout=5)
+        headers = res.headers
+        server = headers.get("Server", "Unknown")
+        x_powered = headers.get("X-Powered-By", "Unknown")
+        print(f"  [TECH] Server: {server}")
+        print(f"  [TECH] X-Powered-By: {x_powered}")
     except:
-        return {}
+        print("  [TECH] Not Detected")
 
-# Technology Detection
-def detect_technologies(headers):
-    tech = []
-    server = headers.get('Server', '')
-    if "cloudflare" in server.lower():
-        tech.append("Cloudflare")
-    if "gws" in server.lower():
-        tech.append("Google Web Server")
-    if headers.get("X-Powered-By"):
-        tech.append(headers["X-Powered-By"])
-    if "Content-Security-Policy" in headers:
-        tech.append("CSP Enabled")
-    return tech if tech else ["Not Detected"]
+def waf_detect(domain):
+    print("\n[+] Firewall / WAF Detection:")
+    try:
+        res = requests.get(f"http://{domain}", timeout=5)
+        headers = str(res.headers).lower()
+        waf_keywords = ['cloudflare', 'sucuri', 'incapsula', 'akamai']
+        detected = [waf for waf in waf_keywords if waf in headers]
+        if detected:
+            print(f"  [WAF] Detected: {', '.join(detected)}")
+        else:
+            print("  [WAF] Not Detected")
+    except:
+        print("  [WAF] Detection Failed")
 
-# WHOIS Lookup
 def whois_lookup(domain):
+    print("\n[+] WHOIS Lookup:")
     try:
-        return whois.whois(domain)
+        data = whois.whois(domain)
+        print(json.dumps(data, indent=2, default=str))
     except:
-        return {}
+        print("  [-] WHOIS lookup failed")
 
-# WAF Detection
-def detect_firewall(headers, response_text):
-    wafs = []
-    server = headers.get('Server', '').lower()
-    if "cloudflare" in server or "cf-ray" in headers:
-        wafs.append("Cloudflare WAF")
-    if "sucuri" in server:
-        wafs.append("Sucuri WAF")
-    if "imperva" in server or "incapsula" in server:
-        wafs.append("Imperva Incapsula WAF")
-    if "big-ip" in server:
-        wafs.append("F5 BIG-IP WAF")
-    if "akamai" in server:
-        wafs.append("Akamai WAF")
-    if any(h.lower().startswith("x-amzn") for h in headers):
-        wafs.append("AWS WAF")
-    if re.search(r'access denied|blocked|your request was blocked', response_text, re.IGNORECASE):
-        wafs.append("Possible Custom WAF / ModSecurity")
-    return wafs if wafs else ["Not Detected"]
+# --------------- MAIN EXECUTION ---------------
+if __name__ == "__main__":
+    print("🔎 Enter Domain (e.g. example.com): ", end="")
+    domain = input().strip()
 
-# ---------------- Main ------------------
-
-domain = input("🔎 Enter Domain (e.g. example.com): ").strip()
-
-print("\n[+] Subdomain Enumeration:")
-for sub in get_subdomains(domain):
-    print(f"  [FOUND] {sub}")
-
-print("\n[+] Port Scanning:")
-for port in scan_ports(domain):
-    print(f"  [OPEN] Port {port}")
-
-print("\n[+] IP Address:")
-ip = get_ip_address(domain)
-print(f"  IP: {ip}")
-
-print("\n[+] IP Geolocation:")
-geo = get_ip_geolocation(ip)
-if geo:
-    print(f"  Country : {geo.get('country')}")
-    print(f"  Region  : {geo.get('region')}")
-    print(f"  City    : {geo.get('city')}")
-    print(f"  Org     : {geo.get('org')}")
-else:
-    print("  [!] Failed to get Geolocation info.")
-
-print("\n[+] HTTP Headers:")
-headers, response_text = get_http_headers(domain)
-for key, value in headers.items():
-    print(f"  {key}: {value}")
-
-print("\n[+] Technology Detection:")
-techs = detect_technologies(headers)
-for t in techs:
-    print(f"  [TECH] {t}")
-
-print("\n[+] Firewall / WAF Detection:")
-wafs = detect_firewall(headers, response_text)
-for w in wafs:
-    print(f"  [WAF] {w}")
-
-print("\n[+] WHOIS Lookup:")
-whois_info = whois_lookup(domain)
-try:
-    print(json.dumps(whois_info, indent=2, default=str))
-except:
-    print(whois_info)
+    get_subdomains_crtsh(domain)
+    port_scan(domain)
+    ip = get_ip(domain)
+    if ip:
+        geoip_lookup(ip)
+    http_headers(domain)
+    tech_detect(domain)
+    waf_detect(domain)
+    whois_lookup(domain)
