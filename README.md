@@ -25,6 +25,9 @@ pip install -r requirements.txt
 If you're using Linux and need sudo:
 
 ```bash
+sudo apt install python3-full
+python3 -m venv myenv
+source myenv/bin/activate
 sudo pip install -r requirements.txt
 ```
 ## 🚀 Usage
