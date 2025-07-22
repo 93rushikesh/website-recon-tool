@@ -5,6 +5,7 @@ import json
 import os
 import re
 
+
 def get_subdomains_crtsh(domain):
     print("\n[+] Subdomain Enumeration (via crt.sh):")
     url = f"https://crt.sh/?q=%25.{domain}&output=json"
@@ -25,9 +26,11 @@ def get_subdomains_crtsh(domain):
     except Exception as e:
         print("  [-] Error in fetching subdomains:", e)
 
+
 def port_scan(domain):
     print("\n[+] Port Scanning:")
-    common_ports = [80, 443, 21, 22, 25, 8080]
+    common_ports = [21, 22, 23, 25, 53, 80, 110, 135, 139, 143, 443, 445, 993, 995, 1723, 3306, 3389, 8080, 8443]
+    open_ports = []
     try:
         ip = socket.gethostbyname(domain)
         for port in common_ports:
@@ -36,9 +39,13 @@ def port_scan(domain):
             result = sock.connect_ex((ip, port))
             if result == 0:
                 print(f"  [OPEN] Port {port}")
+                open_ports.append(port)
+            else:
+                print(f"  [CLOSED] Port {port}")
             sock.close()
     except Exception as e:
         print("  [-] Error in port scanning:", e)
+
 
 def get_ip(domain):
     print("\n[+] IP Address:")
@@ -49,6 +56,7 @@ def get_ip(domain):
     except:
         print("  [-] Could not resolve IP.")
         return None
+
 
 def geoip_lookup(ip):
     print("\n[+] IP Geolocation:")
@@ -62,6 +70,7 @@ def geoip_lookup(ip):
     except Exception as e:
         print("  [-] GeoIP Lookup failed:", e)
 
+
 def http_headers(domain):
     print("\n[+] HTTP Headers:")
     try:
@@ -70,6 +79,7 @@ def http_headers(domain):
             print(f"  {header}: {value}")
     except Exception as e:
         print("  [-] Error fetching headers:", e)
+
 
 def tech_detect(domain):
     print("\n[+] Technology Detection:")
@@ -82,6 +92,7 @@ def tech_detect(domain):
         print(f"  [TECH] X-Powered-By: {x_powered}")
     except:
         print("  [TECH] Not Detected")
+
 
 def waf_detect(domain):
     print("\n[+] Firewall / WAF Detection:")
@@ -97,6 +108,7 @@ def waf_detect(domain):
     except:
         print("  [WAF] Detection Failed")
 
+
 def whois_lookup(domain):
     print("\n[+] WHOIS Lookup:")
     try:
@@ -105,9 +117,10 @@ def whois_lookup(domain):
     except:
         print("  [-] WHOIS lookup failed")
 
+
 # --------------- MAIN EXECUTION ---------------
 if __name__ == "__main__":
-    print("🔎 Enter Domain (e.g. example.com): ", end="")
+    print("\n🔎 Enter Domain (e.g. example.com): ", end="")
     domain = input().strip()
 
     get_subdomains_crtsh(domain)
