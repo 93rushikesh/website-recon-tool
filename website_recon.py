@@ -1,73 +1,158 @@
+import requests
 import socket
-import threading
-from queue import Queue
-from colorama import Fore, Style, init
+import whois
+import json
 
-init(autoreset=True)
+def write_output(text):
+    with open("scan_output.txt", "a", encoding='utf-8') as f:
+        f.write(text + "\n")
 
-print(Fore.CYAN + """
-██████╗░░█████╗░██████╗░██████╗░██████╗░░█████╗░██████╗░░██████╗
-██╔══██╗██╔══██╗██╔══██╗██╔══██╗██╔══██╗██╔══██╗██╔══██╗██╔════╝
-██║░░██║██║░░██║██║░░██║██████╦╝██████╔╝███████║██████╔╝╚█████╗░
-██║░░██║██║░░██║██║░░██║██╔══██╗██╔═══╝░██╔══██║██╔═══╝░░╚═══██╗
-██████╔╝╚█████╔╝██████╔╝██████╦╝██║░░░░░██║░░██║██║░░░░░██████╔╝
-╚═════╝░░╚════╝░╚═════╝░╚═════╝░╚═╝░░░░░╚═╝░░╚═╝╚═╝░░░░░╚═════╝░
-""")
-
-print(Fore.YELLOW + Style.BRIGHT + "\nWELCOME TO PYTHON PORT SCANNER")
-print(Fore.YELLOW + "Developed by: RUSHIKESH GADEKAR")
-
-# Common ports to scan
-common_ports = [21, 22, 23, 25, 53, 80, 110, 139, 143, 443, 445, 587, 8080, 8443]
-
-# Thread count
-thread_count = 100
-
-# Queue to store ports
-queue = Queue()
-
-# Lists to store results
-open_ports = []
-closed_ports = []
-
-# Lock for printing
-print_lock = threading.Lock()
-
-def portscan(ip, port):
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.settimeout(1)
+def get_subdomains_crtsh(domain):
+    print("\n[+] Subdomain Enumeration (via crt.sh):")
+    write_output("\n[+] Subdomain Enumeration (via crt.sh):")
+    url = f"https://crt.sh/?q=%25.{domain}&output=json"
     try:
-        s.connect((ip, port))
-        with print_lock:
-            print(Fore.GREEN + f"[+] Port {port} is open")
-        open_ports.append(port)
-        s.close()
+        res = requests.get(url, timeout=10)
+        entries = res.json()
+        subdomains = set()
+        for entry in entries:
+            name_value = entry['name_value']
+            for sub in name_value.split('\n'):
+                if domain in sub:
+                    subdomains.add(sub.strip())
+        if subdomains:
+            for sub in sorted(subdomains):
+                result = f"  [FOUND] http://{sub}"
+                print(result)
+                write_output(result)
+        else:
+            print("  [-] No subdomains found.")
+            write_output("  [-] No subdomains found.")
+    except Exception as e:
+        print("  [-] Error in fetching subdomains:", e)
+        write_output(f"  [-] Error in fetching subdomains: {e}")
+
+def port_scan(domain):
+    print("\n[+] Port Scanning:")
+    write_output("\n[+] Port Scanning:")
+    ports_to_scan = [21, 22, 23, 53, 80, 443, 8080, 8443]
+    try:
+        ip = socket.gethostbyname(domain)
+        for port in ports_to_scan:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(1)
+            result = sock.connect_ex((ip, port))
+            status = "open" if result == 0 else "close"
+            line = f"  Port {port}: {status}"
+            print(line)
+            write_output(line)
+            sock.close()
+    except Exception as e:
+        print("  [-] Error in port scanning:", e)
+        write_output(f"  [-] Error in port scanning: {e}")
+
+def get_ip(domain):
+    print("\n[+] IP Address:")
+    write_output("\n[+] IP Address:")
+    try:
+        ip = socket.gethostbyname(domain)
+        print(f"  IP: {ip}")
+        write_output(f"  IP: {ip}")
+        return ip
     except:
-        with print_lock:
-            print(Fore.RED + f"[-] Port {port} is closed")
-        closed_ports.append(port)
+        print("  [-] Could not resolve IP.")
+        write_output("  [-] Could not resolve IP.")
+        return None
 
-def threader(ip):
-    while True:
-        worker = queue.get()
-        portscan(ip, worker)
-        queue.task_done()
+def geoip_lookup(ip):
+    print("\n[+] IP Geolocation:")
+    write_output("\n[+] IP Geolocation:")
+    try:
+        res = requests.get(f"http://ip-api.com/json/{ip}", timeout=5)
+        data = res.json()
+        for field in ['country', 'regionName', 'city', 'org']:
+            line = f"  {field.title()} : {data.get(field)}"
+            print(line)
+            write_output(line)
+    except Exception as e:
+        print("  [-] GeoIP Lookup failed:", e)
+        write_output(f"  [-] GeoIP Lookup failed: {e}")
 
-def start_scan(ip):
-    for _ in range(thread_count):
-        t = threading.Thread(target=threader, args=(ip,))
-        t.daemon = True
-        t.start()
+def http_headers(domain):
+    print("\n[+] HTTP Headers:")
+    write_output("\n[+] HTTP Headers:")
+    try:
+        res = requests.get(f"http://{domain}", timeout=5)
+        for header, value in res.headers.items():
+            line = f"  {header}: {value}"
+            print(line)
+            write_output(line)
+    except Exception as e:
+        print("  [-] Error fetching headers:", e)
+        write_output(f"  [-] Error fetching headers: {e}")
 
-    for port in common_ports:
-        queue.put(port)
+def tech_detect(domain):
+    print("\n[+] Technology Detection:")
+    write_output("\n[+] Technology Detection:")
+    try:
+        res = requests.get(f"http://{domain}", timeout=5)
+        headers = res.headers
+        server = headers.get("Server", "Unknown")
+        x_powered = headers.get("X-Powered-By", "Unknown")
+        print(f"  [TECH] Server: {server}")
+        print(f"  [TECH] X-Powered-By: {x_powered}")
+        write_output(f"  [TECH] Server: {server}")
+        write_output(f"  [TECH] X-Powered-By: {x_powered}")
+    except:
+        print("  [TECH] Not Detected")
+        write_output("  [TECH] Not Detected")
 
-    queue.join()
+def waf_detect(domain):
+    print("\n[+] Firewall / WAF Detection:")
+    write_output("\n[+] Firewall / WAF Detection:")
+    try:
+        res = requests.get(f"http://{domain}", timeout=5)
+        headers = str(res.headers).lower()
+        waf_keywords = ['cloudflare', 'sucuri', 'incapsula', 'akamai']
+        detected = [waf for waf in waf_keywords if waf in headers]
+        if detected:
+            line = f"  [WAF] Detected: {', '.join(detected)}"
+            print(line)
+            write_output(line)
+        else:
+            print("  [WAF] Not Detected")
+            write_output("  [WAF] Not Detected")
+    except:
+        print("  [WAF] Detection Failed")
+        write_output("  [WAF] Detection Failed")
 
-    print(Fore.CYAN + "\nScan Summary:")
-    print(Fore.GREEN + f"Open ports: {open_ports}")
-    print(Fore.RED + f"Closed ports: {closed_ports}")
+def whois_lookup(domain):
+    print("\n[+] WHOIS Lookup:")
+    write_output("\n[+] WHOIS Lookup:")
+    try:
+        data = whois.whois(domain)
+        whois_data = json.dumps(data, indent=2, default=str)
+        print(whois_data)
+        write_output(whois_data)
+    except:
+        print("  [-] WHOIS lookup failed")
+        write_output("  [-] WHOIS lookup failed")
 
+# --------------- MAIN EXECUTION ---------------
 if __name__ == "__main__":
-    target = input("\nEnter target IP address: ")
-    start_scan(target)
+    print("🔎 Enter Domain (e.g. example.com): ", end="")
+    domain = input().strip()
+
+    # Clear previous output
+    with open("scan_output.txt", "w", encoding='utf-8') as f:
+        f.write(f"--- Scan Results for {domain} ---\n")
+
+    get_subdomains_crtsh(domain)
+    port_scan(domain)
+    ip = get_ip(domain)
+    if ip:
+        geoip_lookup(ip)
+    http_headers(domain)
+    tech_detect(domain)
+    waf_detect(domain)
+    whois_lookup(domain)
