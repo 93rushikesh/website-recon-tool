@@ -2,6 +2,7 @@ import requests
 import socket
 import whois
 import json
+import time
 
 def show_logo():
     logo = r"""
@@ -23,8 +24,8 @@ def write_output(text):
         f.write(text + "\n")
 
 def get_subdomains_crtsh(domain):
-    print("\n[+] Subdomain Enumeration (via crt.sh):")
-    write_output("\n[+] Subdomain Enumeration (via crt.sh):")
+    print("\n[+] Subdomain Enumeration (crt.sh):")
+    write_output("\n[+] Subdomain Enumeration (crt.sh):")
     url = f"https://crt.sh/?q=%25.{domain}&output=json"
     try:
         res = requests.get(url, timeout=10)
@@ -44,8 +45,8 @@ def get_subdomains_crtsh(domain):
             print("  [-] No subdomains found.")
             write_output("  [-] No subdomains found.")
     except Exception as e:
-        print("  [-] Error in fetching subdomains:", e)
-        write_output(f"  [-] Error in fetching subdomains: {e}")
+        print("  [-] Error:", e)
+        write_output(f"  [-] Error: {e}")
 
 def port_scan(domain):
     print("\n[+] Port Scanning:")
@@ -57,14 +58,14 @@ def port_scan(domain):
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.settimeout(1)
             result = sock.connect_ex((ip, port))
-            status = "open" if result == 0 else "close"
+            status = "open" if result == 0 else "closed"
             line = f"  Port {port}: {status}"
             print(line)
             write_output(line)
             sock.close()
     except Exception as e:
-        print("  [-] Error in port scanning:", e)
-        write_output(f"  [-] Error in port scanning: {e}")
+        print("  [-] Error:", e)
+        write_output(f"  [-] Error: {e}")
 
 def get_ip(domain):
     print("\n[+] IP Address:")
@@ -97,7 +98,7 @@ def http_headers(domain):
     print("\n[+] HTTP Headers:")
     write_output("\n[+] HTTP Headers:")
     try:
-        res = requests.get(f"http://{domain}", timeout=5)
+        res = requests.get(f"https://{domain}", timeout=5)
         for header, value in res.headers.items():
             line = f"  {header}: {value}"
             print(line)
@@ -110,7 +111,7 @@ def tech_detect(domain):
     print("\n[+] Technology Detection:")
     write_output("\n[+] Technology Detection:")
     try:
-        res = requests.get(f"http://{domain}", timeout=5)
+        res = requests.get(f"https://{domain}", timeout=5)
         headers = res.headers
         server = headers.get("Server", "Unknown")
         x_powered = headers.get("X-Powered-By", "Unknown")
@@ -123,10 +124,10 @@ def tech_detect(domain):
         write_output("  [TECH] Not Detected")
 
 def waf_detect(domain):
-    print("\n[+] Firewall / WAF Detection:")
-    write_output("\n[+] Firewall / WAF Detection:")
+    print("\n[+] WAF Detection:")
+    write_output("\n[+] WAF Detection:")
     try:
-        res = requests.get(f"http://{domain}", timeout=5)
+        res = requests.get(f"https://{domain}", timeout=5)
         headers = str(res.headers).lower()
         waf_keywords = ['cloudflare', 'sucuri', 'incapsula', 'akamai']
         detected = [waf for waf in waf_keywords if waf in headers]
@@ -153,22 +154,60 @@ def whois_lookup(domain):
         print("  [-] WHOIS lookup failed")
         write_output("  [-] WHOIS lookup failed")
 
-# --------------- MAIN EXECUTION ---------------
-if __name__ == "__main__":
-    show_logo()  # Show logo at start
-    print("🔎 Enter Domain (e.g. example.com): ", end="")
-    domain = input().strip()
+# ---------------- MAIN ----------------
 
-    # Clear previous output
+def main():
+    show_logo()
+    domain = input("🔎 Enter domain (e.g. example.com): ").strip()
+
     with open("scan_output.txt", "w", encoding='utf-8') as f:
         f.write(f"--- Scan Results for {domain} ---\n")
 
-    get_subdomains_crtsh(domain)
-    port_scan(domain)
-    ip = get_ip(domain)
-    if ip:
-        geoip_lookup(ip)
-    http_headers(domain)
-    tech_detect(domain)
-    waf_detect(domain)
-    whois_lookup(domain)
+    while True:
+        print("\nChoose Scan Option:")
+        print("1. Subdomain Enumeration")
+        print("2. Port Scan")
+        print("3. IP & GeoIP")
+        print("4. HTTP Headers")
+        print("5. Tech Detection")
+        print("6. WAF Detection")
+        print("7. WHOIS Lookup")
+        print("8. Full Scan")
+        print("9. Exit")
+
+        choice = input("Enter option (1-9): ")
+
+        if choice == "1":
+            get_subdomains_crtsh(domain)
+        elif choice == "2":
+            port_scan(domain)
+        elif choice == "3":
+            ip = get_ip(domain)
+            if ip:
+                geoip_lookup(ip)
+        elif choice == "4":
+            http_headers(domain)
+        elif choice == "5":
+            tech_detect(domain)
+        elif choice == "6":
+            waf_detect(domain)
+        elif choice == "7":
+            whois_lookup(domain)
+        elif choice == "8":
+            get_subdomains_crtsh(domain)
+            port_scan(domain)
+            ip = get_ip(domain)
+            if ip:
+                geoip_lookup(ip)
+            http_headers(domain)
+            tech_detect(domain)
+            waf_detect(domain)
+            whois_lookup(domain)
+        elif choice == "9":
+            print("\n🔚 Exiting. Results saved in scan_output.txt")
+            break
+        else:
+            print("❗ Invalid choice. Try again.")
+
+if __name__ == "__main__":
+    main()
