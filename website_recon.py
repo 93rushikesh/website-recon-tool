@@ -26,46 +26,37 @@ def write_output(text):
         f.write(text + "\n")
 
 def get_subdomains_all(domain):
-    print(Fore.GREEN + "\n[+] Subdomain Enumeration (Multi-source):")
-    write_output("\n[+] Subdomain Enumeration (Multi-source):")
-    sources = []
+    print("\n[+] Subdomain Enumeration (Multi-source):")
+    subdomains = set()
 
-    # crt.sh
     try:
-        url = f"https://crt.sh/?q=%25.{domain}&output=json"
-        res = requests.get(url, timeout=10)
-        if res.status_code == 200:
-            entries = res.json()
-            for entry in entries:
-                for sub in entry['name_value'].split('\n'):
-                    if domain in sub:
-                        sources.append(sub.strip())
-    except Exception as e:
-        print(Fore.YELLOW + f"  [-] crt.sh failed: {e}")
-
-    # rapiddns.io
-    try:
+        # RapidDNS source
         url = f"https://rapiddns.io/subdomain/{domain}?full=1"
-        res = requests.get(url, timeout=10)
-        if res.status_code == 200:
-            text = res.text
-            lines = text.splitlines()
-            for line in lines:
-                if domain in line and not line.startswith("<"):
-                    sources.append(line.strip())
+        response = requests.get(url, timeout=10)
+        matches = re.findall(r'<td>([a-zA-Z0-9._-]+\.' + re.escape(domain) + r')</td>', response.text)
+        for match in matches:
+            subdomains.add(match.strip())
+
+        # crt.sh source
+        crt_url = f"https://crt.sh/?q=%25.{domain}&output=json"
+        crt_response = requests.get(crt_url, timeout=10)
+        if crt_response.status_code == 200 and crt_response.text.strip().startswith("["):
+            cert_data = crt_response.json()
+            for entry in cert_data:
+                name = entry.get("name_value", "")
+                for sub in name.split("\n"):
+                    if domain in sub:
+                        subdomains.add(sub.strip())
+
     except Exception as e:
-        print(Fore.YELLOW + f"  [-] rapiddns.io failed: {e}")
+        print(f"  [-] Error during subdomain fetching: {e}")
 
-    unique_subdomains = sorted(set(sources))
-
-    if unique_subdomains:
-        for sub in unique_subdomains:
-            result = f"  [FOUND] http://{sub}"
-            print(result)
-            write_output(result)
+    if subdomains:
+        for sub in sorted(subdomains):
+            print(f"  [FOUND] http://{sub}")
     else:
-        print(Fore.RED + "  [-] No subdomains found from all sources.")
-        write_output("  [-] No subdomains found.")
+        print("  [-] No subdomains found.")
+
 
 def scan_port(ip, port):
     try:
