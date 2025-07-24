@@ -25,30 +25,47 @@ def write_output(text):
     with open("scan_output.txt", "a", encoding='utf-8') as f:
         f.write(text + "\n")
 
-def get_subdomains_crtsh(domain):
-    print(Fore.GREEN + "\n[+] Subdomain Enumeration (crt.sh):")
-    write_output("\n[+] Subdomain Enumeration (crt.sh):")
-    url = f"https://crt.sh/?q=%25.{domain}&output=json"
+def get_subdomains_all(domain):
+    print(Fore.GREEN + "\n[+] Subdomain Enumeration (Multi-source):")
+    write_output("\n[+] Subdomain Enumeration (Multi-source):")
+    sources = []
+
+    # crt.sh
     try:
+        url = f"https://crt.sh/?q=%25.{domain}&output=json"
         res = requests.get(url, timeout=10)
-        entries = res.json()
-        subdomains = set()
-        for entry in entries:
-            name_value = entry['name_value']
-            for sub in name_value.split('\n'):
-                if domain in sub:
-                    subdomains.add(sub.strip())
-        if subdomains:
-            for sub in sorted(subdomains):
-                result = f"  [FOUND] http://{sub}"
-                print(result)
-                write_output(result)
-        else:
-            print("  [-] No subdomains found.")
-            write_output("  [-] No subdomains found.")
+        if res.status_code == 200:
+            entries = res.json()
+            for entry in entries:
+                for sub in entry['name_value'].split('\n'):
+                    if domain in sub:
+                        sources.append(sub.strip())
     except Exception as e:
-        print(Fore.RED + f"  [-] Error: {e}")
-        write_output(f"  [-] Error: {e}")
+        print(Fore.YELLOW + f"  [-] crt.sh failed: {e}")
+
+    # rapiddns.io
+    try:
+        url = f"https://rapiddns.io/subdomain/{domain}?full=1"
+        res = requests.get(url, timeout=10)
+        if res.status_code == 200:
+            text = res.text
+            lines = text.splitlines()
+            for line in lines:
+                if domain in line and not line.startswith("<"):
+                    sources.append(line.strip())
+    except Exception as e:
+        print(Fore.YELLOW + f"  [-] rapiddns.io failed: {e}")
+
+    unique_subdomains = sorted(set(sources))
+
+    if unique_subdomains:
+        for sub in unique_subdomains:
+            result = f"  [FOUND] http://{sub}"
+            print(result)
+            write_output(result)
+    else:
+        print(Fore.RED + "  [-] No subdomains found from all sources.")
+        write_output("  [-] No subdomains found.")
 
 def scan_port(ip, port):
     try:
@@ -200,7 +217,7 @@ def main():
         choice = input("Enter option (1-9): ")
 
         if choice == "1":
-            get_subdomains_crtsh(domain)
+            get_subdomains_all(domain)
         elif choice == "2":
             port_scan(domain)
         elif choice == "3":
@@ -216,7 +233,7 @@ def main():
         elif choice == "7":
             whois_lookup(domain)
         elif choice == "8":
-            get_subdomains_crtsh(domain)
+            get_subdomains_all(domain)
             port_scan(domain)
             ip = get_ip(domain)
             if ip:
