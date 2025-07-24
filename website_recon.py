@@ -2,7 +2,9 @@ import requests
 import socket
 import whois
 import json
-import time
+import threading
+from colorama import Fore, Style, init
+init(autoreset=True)
 
 def show_logo():
     logo = r"""
@@ -17,14 +19,14 @@ def show_logo():
 █▀▀ █▄█ █▄█ █▄█ █ ▄█ █░▀█ ██▄ █▀▄
          RUSHIKESH's Web Recon Tool
 """
-    print(logo)
+    print(Fore.CYAN + logo)
 
 def write_output(text):
     with open("scan_output.txt", "a", encoding='utf-8') as f:
         f.write(text + "\n")
 
 def get_subdomains_crtsh(domain):
-    print("\n[+] Subdomain Enumeration (crt.sh):")
+    print(Fore.GREEN + "\n[+] Subdomain Enumeration (crt.sh):")
     write_output("\n[+] Subdomain Enumeration (crt.sh):")
     url = f"https://crt.sh/?q=%25.{domain}&output=json"
     try:
@@ -45,43 +47,54 @@ def get_subdomains_crtsh(domain):
             print("  [-] No subdomains found.")
             write_output("  [-] No subdomains found.")
     except Exception as e:
-        print("  [-] Error:", e)
+        print(Fore.RED + f"  [-] Error: {e}")
         write_output(f"  [-] Error: {e}")
 
+def scan_port(ip, port):
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(1)
+        result = sock.connect_ex((ip, port))
+        status = "open" if result == 0 else "closed"
+        line = f"  Port {port}: {status}"
+        print(line)
+        write_output(line)
+        sock.close()
+    except:
+        pass
+
 def port_scan(domain):
-    print("\n[+] Port Scanning:")
-    write_output("\n[+] Port Scanning:")
+    print(Fore.GREEN + "\n[+] Port Scanning (Multi-threaded):")
+    write_output("\n[+] Port Scanning (Multi-threaded):")
     ports_to_scan = [21, 22, 23, 53, 80, 443, 8080, 8443]
     try:
         ip = socket.gethostbyname(domain)
+        threads = []
         for port in ports_to_scan:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(1)
-            result = sock.connect_ex((ip, port))
-            status = "open" if result == 0 else "closed"
-            line = f"  Port {port}: {status}"
-            print(line)
-            write_output(line)
-            sock.close()
+            t = threading.Thread(target=scan_port, args=(ip, port))
+            t.start()
+            threads.append(t)
+        for t in threads:
+            t.join()
     except Exception as e:
-        print("  [-] Error:", e)
+        print(Fore.RED + f"  [-] Error: {e}")
         write_output(f"  [-] Error: {e}")
 
 def get_ip(domain):
-    print("\n[+] IP Address:")
+    print(Fore.GREEN + "\n[+] IP Address:")
     write_output("\n[+] IP Address:")
     try:
         ip = socket.gethostbyname(domain)
         print(f"  IP: {ip}")
         write_output(f"  IP: {ip}")
         return ip
-    except:
-        print("  [-] Could not resolve IP.")
-        write_output("  [-] Could not resolve IP.")
+    except Exception as e:
+        print(Fore.RED + f"  [-] Could not resolve IP: {e}")
+        write_output(f"  [-] Could not resolve IP: {e}")
         return None
 
 def geoip_lookup(ip):
-    print("\n[+] IP Geolocation:")
+    print(Fore.GREEN + "\n[+] IP Geolocation:")
     write_output("\n[+] IP Geolocation:")
     try:
         res = requests.get(f"http://ip-api.com/json/{ip}", timeout=5)
@@ -91,11 +104,11 @@ def geoip_lookup(ip):
             print(line)
             write_output(line)
     except Exception as e:
-        print("  [-] GeoIP Lookup failed:", e)
+        print(Fore.RED + f"  [-] GeoIP Lookup failed: {e}")
         write_output(f"  [-] GeoIP Lookup failed: {e}")
 
 def http_headers(domain):
-    print("\n[+] HTTP Headers:")
+    print(Fore.GREEN + "\n[+] HTTP Headers:")
     write_output("\n[+] HTTP Headers:")
     try:
         res = requests.get(f"https://{domain}", timeout=5)
@@ -104,11 +117,11 @@ def http_headers(domain):
             print(line)
             write_output(line)
     except Exception as e:
-        print("  [-] Error fetching headers:", e)
+        print(Fore.RED + f"  [-] Error fetching headers: {e}")
         write_output(f"  [-] Error fetching headers: {e}")
 
 def tech_detect(domain):
-    print("\n[+] Technology Detection:")
+    print(Fore.GREEN + "\n[+] Technology Detection:")
     write_output("\n[+] Technology Detection:")
     try:
         res = requests.get(f"https://{domain}", timeout=5)
@@ -119,12 +132,12 @@ def tech_detect(domain):
         print(f"  [TECH] X-Powered-By: {x_powered}")
         write_output(f"  [TECH] Server: {server}")
         write_output(f"  [TECH] X-Powered-By: {x_powered}")
-    except:
-        print("  [TECH] Not Detected")
-        write_output("  [TECH] Not Detected")
+    except Exception as e:
+        print(Fore.RED + f"  [TECH] Not Detected: {e}")
+        write_output(f"  [TECH] Not Detected: {e}")
 
 def waf_detect(domain):
-    print("\n[+] WAF Detection:")
+    print(Fore.GREEN + "\n[+] WAF Detection:")
     write_output("\n[+] WAF Detection:")
     try:
         res = requests.get(f"https://{domain}", timeout=5)
@@ -138,26 +151,35 @@ def waf_detect(domain):
         else:
             print("  [WAF] Not Detected")
             write_output("  [WAF] Not Detected")
-    except:
-        print("  [WAF] Detection Failed")
-        write_output("  [WAF] Detection Failed")
+    except Exception as e:
+        print(Fore.RED + f"  [WAF] Detection Failed: {e}")
+        write_output(f"  [WAF] Detection Failed: {e}")
 
 def whois_lookup(domain):
-    print("\n[+] WHOIS Lookup:")
+    print(Fore.GREEN + "\n[+] WHOIS Lookup:")
     write_output("\n[+] WHOIS Lookup:")
     try:
         data = whois.whois(domain)
         whois_data = json.dumps(data, indent=2, default=str)
         print(whois_data)
         write_output(whois_data)
-    except:
-        print("  [-] WHOIS lookup failed")
-        write_output("  [-] WHOIS lookup failed")
+    except Exception as e:
+        print(Fore.RED + f"  [-] WHOIS lookup failed: {e}")
+        write_output(f"  [-] WHOIS lookup failed: {e}")
 
-# ---------------- MAIN ----------------
+def check_internet():
+    try:
+        requests.get("http://www.google.com", timeout=3)
+        return True
+    except:
+        return False
 
 def main():
     show_logo()
+    if not check_internet():
+        print(Fore.RED + "❗ No Internet Connection. Please connect and retry.")
+        return
+
     domain = input("🔎 Enter domain (e.g. example.com): ").strip()
 
     with open("scan_output.txt", "w", encoding='utf-8') as f:
@@ -207,7 +229,7 @@ def main():
             print("\n🔚 Exiting. Results saved in scan_output.txt")
             break
         else:
-            print("❗ Invalid choice. Try again.")
+            print(Fore.YELLOW + "❗ Invalid choice. Try again.")
 
 if __name__ == "__main__":
     main()
