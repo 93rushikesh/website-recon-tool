@@ -23,6 +23,7 @@ cd website-recon-tool
 sudo apt install python3-full
 python3 -m venv myenv
 source myenv/bin/activate
+pip install colorama
 pip install -r requirements.txt
 ```
 If you're using Linux and need sudo:
