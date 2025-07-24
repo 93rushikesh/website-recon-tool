@@ -4,12 +4,12 @@ A simple and effective information gathering tool for reconnaissance of websites
 
 This tool performs:
 - 🔸 Subdomain enumeration
-- 🔸 Port scanning (ports 80, 443)
+- 🔸 Port scanning 
 - 🔸 HTTP headers extraction
 - 🔸 WHOIS lookup
 - 🔸 IP address & geolocation
 - 🔸 Technology stack detection
-- 🔸 Basic firewall detection *(via server headers)*
+- 🔸 Basic firewall detection
 
 ---
 
