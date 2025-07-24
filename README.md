@@ -43,7 +43,7 @@ Enter Domain (e.g. example.com): google.com
 
 ✅ Subdomains
 
-🔓 Open ports (80, 443)
+🔓 Open ports
 
 📥 HTTP response headers
 
