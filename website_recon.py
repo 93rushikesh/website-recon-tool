@@ -3,6 +3,7 @@ import socket
 import whois
 import json
 import threading
+import re
 from colorama import Fore, Style, init
 init(autoreset=True)
 
