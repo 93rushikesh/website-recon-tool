@@ -146,7 +146,7 @@ def waf_detect(domain):
     print(Fore.GREEN + "\n[+] WAF Detection (Basic + Advanced):")
     write_output("\n[+] WAF Detection (Basic + Advanced):")
 
-    # Basic detection
+    
     try:
         res = requests.get(f"https://{domain}", timeout=5)
         headers = str(res.headers).lower()
@@ -163,7 +163,7 @@ def waf_detect(domain):
         print(Fore.RED + f"  [WAF] Basic Detection Failed: {e}")
         write_output(f"  [WAF] Basic Detection Failed: {e}")
 
-    # Advanced WAFW00F detection
+   
     try:
         url = f"https://{domain}"
         waf = WAFW00F(url)
