@@ -5,6 +5,8 @@ import json
 import threading
 import re
 from colorama import Fore, Style, init
+from wafw00f.main import WAFW00F  # 🔥 Added for WAF detection
+
 init(autoreset=True)
 
 def show_logo():
@@ -29,16 +31,13 @@ def write_output(text):
 def get_subdomains_all(domain):
     print("\n[+] Subdomain Enumeration (Multi-source):")
     subdomains = set()
-
     try:
-        # RapidDNS source
         url = f"https://rapiddns.io/subdomain/{domain}?full=1"
         response = requests.get(url, timeout=10)
         matches = re.findall(r'<td>([a-zA-Z0-9._-]+\.' + re.escape(domain) + r')</td>', response.text)
         for match in matches:
             subdomains.add(match.strip())
 
-        # crt.sh source
         crt_url = f"https://crt.sh/?q=%25.{domain}&output=json"
         crt_response = requests.get(crt_url, timeout=10)
         if crt_response.status_code == 200 and crt_response.text.strip().startswith("["):
@@ -48,7 +47,6 @@ def get_subdomains_all(domain):
                 for sub in name.split("\n"):
                     if domain in sub:
                         subdomains.add(sub.strip())
-
     except Exception as e:
         print(f"  [-] Error during subdomain fetching: {e}")
 
@@ -57,7 +55,6 @@ def get_subdomains_all(domain):
             print(f"  [FOUND] http://{sub}")
     else:
         print("  [-] No subdomains found.")
-
 
 def scan_port(ip, port):
     try:
@@ -146,23 +143,41 @@ def tech_detect(domain):
         write_output(f"  [TECH] Not Detected: {e}")
 
 def waf_detect(domain):
-    print(Fore.GREEN + "\n[+] WAF Detection:")
-    write_output("\n[+] WAF Detection:")
+    print(Fore.GREEN + "\n[+] WAF Detection (Basic + Advanced):")
+    write_output("\n[+] WAF Detection (Basic + Advanced):")
+
+    # Basic detection
     try:
         res = requests.get(f"https://{domain}", timeout=5)
         headers = str(res.headers).lower()
         waf_keywords = ['cloudflare', 'sucuri', 'incapsula', 'akamai']
         detected = [waf for waf in waf_keywords if waf in headers]
         if detected:
-            line = f"  [WAF] Detected: {', '.join(detected)}"
+            line = f"  [WAF] Basic Detected: {', '.join(detected)}"
             print(line)
             write_output(line)
         else:
-            print("  [WAF] Not Detected")
-            write_output("  [WAF] Not Detected")
+            print("  [WAF] Basic: Not Detected")
+            write_output("  [WAF] Basic: Not Detected")
     except Exception as e:
-        print(Fore.RED + f"  [WAF] Detection Failed: {e}")
-        write_output(f"  [WAF] Detection Failed: {e}")
+        print(Fore.RED + f"  [WAF] Basic Detection Failed: {e}")
+        write_output(f"  [WAF] Basic Detection Failed: {e}")
+
+    # Advanced WAFW00F detection
+    try:
+        url = f"https://{domain}"
+        waf = WAFW00F(url)
+        result = waf.identwaf()
+        if result:
+            line = f"  [WAF] Advanced Detected: {result[0]}"
+            print(line)
+            write_output(line)
+        else:
+            print("  [WAF] Advanced: Not Detected")
+            write_output("  [WAF] Advanced: Not Detected")
+    except Exception as e:
+        print(Fore.RED + f"  [WAF] Advanced Detection Failed: {e}")
+        write_output(f"  [WAF] Advanced Detection Failed: {e}")
 
 def whois_lookup(domain):
     print(Fore.GREEN + "\n[+] WHOIS Lookup:")
