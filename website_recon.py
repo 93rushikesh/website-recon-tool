@@ -6,16 +6,22 @@ import threading
 import re
 import time
 import os
+import subprocess
+import sys
 from datetime import datetime
 from colorama import Fore, Style, init
-from wafw00f.main import WAFW00F
 from urllib.parse import urlparse
-from bs4 import BeautifulSoup
+
+# Auto-install beautifulsoup4 if missing
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "beautifulsoup4"])
+    from bs4 import BeautifulSoup
 
 init(autoreset=True)
 output_lock = threading.Lock()
 scan_counter = 1
-
 
 def check_internet(host="8.8.8.8", port=53, timeout=3):
     try:
@@ -24,7 +30,6 @@ def check_internet(host="8.8.8.8", port=53, timeout=3):
         return True
     except socket.error:
         return False
-
 
 def show_logo():
     logo = r"""
@@ -41,24 +46,20 @@ def show_logo():
 """
     print(Fore.CYAN + logo)
 
-
 def write_output(text):
     with output_lock:
         with open(output_file, "a", encoding='utf-8') as f:
             f.write(text + "\n")
 
-
 def is_valid_domain(domain):
     pattern = r"^(?!\-)(?:[a-zA-Z0-9-]{1,63}\.)+[a-zA-Z]{2,}$"
     return re.match(pattern, domain) is not None
-
 
 def normalize_domain(domain):
     parsed = urlparse(domain)
     if parsed.scheme:
         return parsed.netloc
     return domain.split("/")[0]
-
 
 def get_subdomains_crtsh(domain):
     url = f"https://crt.sh/?q=%.{domain}&output=json"
@@ -77,7 +78,6 @@ def get_subdomains_crtsh(domain):
         pass
     return set()
 
-
 def get_subdomains_rapiddns(domain):
     url = f"https://rapiddns.io/subdomain/{domain}?full=1"
     try:
@@ -93,7 +93,6 @@ def get_subdomains_rapiddns(domain):
         pass
     return set()
 
-
 def get_subdomains_all(domain):
     print("\n[+] Subdomain Enumeration:")
     subdomains = set()
@@ -106,7 +105,6 @@ def get_subdomains_all(domain):
             write_output(f"[Subdomain] {sub}")
     else:
         print("  [-] No subdomains found.")
-
 
 def port_scan(domain):
     print("\n[+] Port Scan:")
@@ -125,7 +123,6 @@ def port_scan(domain):
     except Exception as e:
         print(f"  [-] Error: {e}")
 
-
 def get_ip_geoip(domain):
     print("\n[+] IP & GeoIP Info:")
     try:
@@ -140,7 +137,6 @@ def get_ip_geoip(domain):
     except Exception as e:
         print(f"  [-] Error: {e}")
 
-
 def get_http_headers(domain):
     print("\n[+] HTTP Headers:")
     try:
@@ -151,7 +147,6 @@ def get_http_headers(domain):
             write_output(f"[Header] {key}: {val}")
     except Exception as e:
         print(f"  [-] Error: {e}")
-
 
 def detect_tech(domain):
     print("\n[+] Technology Detection:")
@@ -172,20 +167,19 @@ def detect_tech(domain):
     except Exception as e:
         print(f"  [-] Error: {e}")
 
-
 def waf_detect(domain):
     print("\n[+] WAF Detection:")
     try:
-        waf = WAFW00F(target=domain)
-        results = waf.identwaf()
-        if results:
-            print(f"  [+] WAF Detected: {results}")
-            write_output(f"[WAF] Detected: {results}")
+        result = subprocess.run(["wafw00f", domain], capture_output=True, text=True)
+        if result.returncode == 0:
+            print(result.stdout)
+            write_output(f"[WAF Detection Output]\n{result.stdout}")
         else:
-            print("  [-] No WAF detected.")
+            print("  [-] wafw00f failed to run.")
+    except FileNotFoundError:
+        print("  [-] wafw00f not found. Install it via: pip install wafw00f")
     except Exception as e:
         print(f"  [-] Error: {e}")
-
 
 def whois_lookup(domain):
     print("\n[+] WHOIS Lookup:")
@@ -197,7 +191,6 @@ def whois_lookup(domain):
     except Exception as e:
         print(f"  [-] Error: {e}")
 
-
 def full_scan(domain):
     get_subdomains_all(domain)
     port_scan(domain)
@@ -206,7 +199,6 @@ def full_scan(domain):
     detect_tech(domain)
     waf_detect(domain)
     whois_lookup(domain)
-
 
 def main():
     global scan_counter, output_file
@@ -264,7 +256,6 @@ def main():
             break
         else:
             print(Fore.YELLOW + "❗ Invalid choice. Try again.")
-
 
 if __name__ == "__main__":
     main()
