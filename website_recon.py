@@ -5,9 +5,11 @@ import json
 import threading
 import re
 from colorama import Fore, Style, init
-from wafw00f.main import WAFW00F  # 🔥 Added for WAF detection
+from wafw00f.main import WAFW00F
 
 init(autoreset=True)
+
+output_lock = threading.Lock()
 
 def show_logo():
     logo = r"""
@@ -25,8 +27,9 @@ def show_logo():
     print(Fore.CYAN + logo)
 
 def write_output(text):
-    with open("scan_output.txt", "a", encoding='utf-8') as f:
-        f.write(text + "\n")
+    with output_lock:
+        with open("scan_output.txt", "a", encoding='utf-8') as f:
+            f.write(text + "\n")
 
 def get_subdomains_all(domain):
     print("\n[+] Subdomain Enumeration (Multi-source):")
@@ -34,7 +37,7 @@ def get_subdomains_all(domain):
     try:
         url = f"https://rapiddns.io/subdomain/{domain}?full=1"
         response = requests.get(url, timeout=10)
-        matches = re.findall(r'<td>([a-zA-Z0-9._-]+\.' + re.escape(domain) + r')</td>', response.text)
+        matches = re.findall(r'<td>([a-zA-Z0-9._-]+\\.' + re.escape(domain) + r')</td>', response.text)
         for match in matches:
             subdomains.add(match.strip())
 
@@ -59,19 +62,19 @@ def get_subdomains_all(domain):
 def scan_port(ip, port):
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(1)
+        sock.settimeout(2)
         result = sock.connect_ex((ip, port))
         status = "open" if result == 0 else "closed"
         line = f"  Port {port}: {status}"
         print(line)
         write_output(line)
         sock.close()
-    except:
-        pass
+    except Exception as e:
+        write_output(f"  Port {port}: Error - {e}")
 
 def port_scan(domain):
-    print(Fore.GREEN + "\n[+] Port Scanning (Multi-threaded):")
-    write_output("\n[+] Port Scanning (Multi-threaded):")
+    print(Fore.MAGENTA + "\n[================= PORT SCAN =================]")
+    write_output("\n[+] Port Scanning:")
     ports_to_scan = [21, 22, 23, 53, 80, 443, 8080, 8443]
     try:
         ip = socket.gethostbyname(domain)
@@ -117,7 +120,7 @@ def http_headers(domain):
     print(Fore.GREEN + "\n[+] HTTP Headers:")
     write_output("\n[+] HTTP Headers:")
     try:
-        res = requests.get(f"https://{domain}", timeout=5)
+        res = requests.get(f"https://{domain}", headers={'User-Agent': 'Mozilla/5.0'}, timeout=5)
         for header, value in res.headers.items():
             line = f"  {header}: {value}"
             print(line)
@@ -130,7 +133,7 @@ def tech_detect(domain):
     print(Fore.GREEN + "\n[+] Technology Detection:")
     write_output("\n[+] Technology Detection:")
     try:
-        res = requests.get(f"https://{domain}", timeout=5)
+        res = requests.get(f"https://{domain}", headers={'User-Agent': 'Mozilla/5.0'}, timeout=5)
         headers = res.headers
         server = headers.get("Server", "Unknown")
         x_powered = headers.get("X-Powered-By", "Unknown")
@@ -143,12 +146,10 @@ def tech_detect(domain):
         write_output(f"  [TECH] Not Detected: {e}")
 
 def waf_detect(domain):
-    print(Fore.GREEN + "\n[+] WAF Detection (Basic + Advanced):")
-    write_output("\n[+] WAF Detection (Basic + Advanced):")
-
-    
+    print(Fore.GREEN + "\n[+] WAF Detection:")
+    write_output("\n[+] WAF Detection:")
     try:
-        res = requests.get(f"https://{domain}", timeout=5)
+        res = requests.get(f"https://{domain}", headers={'User-Agent': 'Mozilla/5.0'}, timeout=5)
         headers = str(res.headers).lower()
         waf_keywords = ['cloudflare', 'sucuri', 'incapsula', 'akamai']
         detected = [waf for waf in waf_keywords if waf in headers]
@@ -163,10 +164,8 @@ def waf_detect(domain):
         print(Fore.RED + f"  [WAF] Basic Detection Failed: {e}")
         write_output(f"  [WAF] Basic Detection Failed: {e}")
 
-   
     try:
-        url = f"https://{domain}"
-        waf = WAFW00F(url)
+        waf = WAFW00F(f"https://{domain}")
         result = waf.identwaf()
         if result:
             line = f"  [WAF] Advanced Detected: {result[0]}"
