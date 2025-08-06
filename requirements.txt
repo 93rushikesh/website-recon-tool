@@ -1,2 +1,4 @@
 requests
 python-whois
+colorama
+wafw00f
