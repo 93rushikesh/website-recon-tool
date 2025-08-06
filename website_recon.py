@@ -5,6 +5,7 @@ import json
 import threading
 import re
 import time
+import os
 from datetime import datetime
 from colorama import Fore, Style, init
 from wafw00f.main import WAFW00F
@@ -12,7 +13,6 @@ from urllib.parse import urlparse
 
 init(autoreset=True)
 output_lock = threading.Lock()
-
 scan_counter = 1
 
 # ✅ Internet check function
@@ -33,8 +33,8 @@ def show_logo():
 ██████╔╝╚█████╔╝██████╔╝██████╦╝██║░░░░░██║░░██║██║░░░░░██████╔╝
 ╚═════╝░░╚════╝░╚═════╝░╚═════╝░╚═╝░░░░░╚═╝░░╚═╝╚═╝░░░░░╚═════╝░
 
-█▀█ █░█ █▀█ █░█ █ █▀ █▄░█ █▀▀ █▀█
-█▀▀ █▄█ █▄█ █▄█ █ ▄█ █░▀█ ██▄ █▀▄
+█▀█	█░█	█▀█	█░█	█	█▀	█▄░█	█▀▀	█▀█
+█▀▀	█▄█	█▄█	█▄█	█	▄█	█░▀█	██▄	█▀▄
          RUSHIKESH's Web Recon Tool
 """
     print(Fore.CYAN + logo)
@@ -69,8 +69,36 @@ def safe_request(domain, path="/", headers=None):
             continue
     return None
 
-# Remaining functions stay unchanged
-# Only update output_file generation in `main` for numbered scans
+def get_next_filename(prefix, ext):
+    i = 1
+    while os.path.exists(f"{prefix}_output{i}.{ext}"):
+        i += 1
+    return f"{prefix}_output{i}.{ext}"
+
+def get_subdomains_all(domain):
+    print("\n[+] Subdomain Enumeration (Multi-source):")
+    subdomains = set()
+
+    try:
+        subdomains.update(get_subdomains_crtsh(domain))
+    except Exception as e:
+        print(f"  [-] crt.sh error: {e}")
+
+    try:
+        subdomains.update(get_subdomains_rapiddns(domain))
+    except Exception as e:
+        print(f"  [-] RapidDNS error: {e}")
+
+    if subdomains:
+        for sub in subdomains:
+            print(f"  [+] {sub}")
+        filename = get_next_filename("subdomains", "txt")
+        with open(filename, 'w') as f:
+            for sub in subdomains:
+                f.write(sub + '\n')
+        print(f"  [*] Saved to {filename}")
+    else:
+        print("  [-] No subdomains found.")
 
 def main():
     global scan_counter
