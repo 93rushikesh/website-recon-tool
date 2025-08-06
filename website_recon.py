@@ -16,7 +16,7 @@ init(autoreset=True)
 output_lock = threading.Lock()
 scan_counter = 1
 
-# ✅ Internet check function
+
 def check_internet(host="8.8.8.8", port=53, timeout=3):
     try:
         socket.setdefaulttimeout(timeout)
@@ -24,6 +24,7 @@ def check_internet(host="8.8.8.8", port=53, timeout=3):
         return True
     except socket.error:
         return False
+
 
 def show_logo():
     logo = r"""
@@ -40,14 +41,17 @@ def show_logo():
 """
     print(Fore.CYAN + logo)
 
+
 def write_output(text):
     with output_lock:
         with open(output_file, "a", encoding='utf-8') as f:
             f.write(text + "\n")
 
+
 def is_valid_domain(domain):
     pattern = r"^(?!\-)(?:[a-zA-Z0-9-]{1,63}\.)+[a-zA-Z]{2,}$"
     return re.match(pattern, domain) is not None
+
 
 def normalize_domain(domain):
     parsed = urlparse(domain)
@@ -55,26 +59,6 @@ def normalize_domain(domain):
         return parsed.netloc
     return domain.split("/")[0]
 
-def safe_request(domain, path="/", headers=None):
-    headers = headers or {'User-Agent': 'Mozilla/5.0'}
-    if not domain.startswith("http"):
-        urls = [f"https://{domain}{path}", f"http://{domain}{path}"]
-    else:
-        urls = [domain]
-    for url in urls:
-        try:
-            res = requests.get(url, headers=headers, timeout=10)
-            if res.status_code == 200:
-                return res
-        except:
-            continue
-    return None
-
-def get_next_filename(prefix, ext):
-    i = 1
-    while os.path.exists(f"{prefix}_output{i}.{ext}"):
-        i += 1
-    return f"{prefix}_output{i}.{ext}"
 
 def get_subdomains_crtsh(domain):
     url = f"https://crt.sh/?q=%.{domain}&output=json"
@@ -89,9 +73,10 @@ def get_subdomains_crtsh(domain):
                     if domain in name:
                         subdomains.add(name.strip())
             return subdomains
-    except Exception as e:
-        raise e
+    except Exception:
+        pass
     return set()
+
 
 def get_subdomains_rapiddns(domain):
     url = f"https://rapiddns.io/subdomain/{domain}?full=1"
@@ -104,40 +89,131 @@ def get_subdomains_rapiddns(domain):
             if domain in row.text:
                 subdomains.add(row.text.strip())
         return subdomains
-    except Exception as e:
-        raise e
+    except Exception:
+        pass
     return set()
 
+
 def get_subdomains_all(domain):
-    print("\n[+] Subdomain Enumeration (Multi-source):")
+    print("\n[+] Subdomain Enumeration:")
     subdomains = set()
-
-    try:
-        subdomains.update(get_subdomains_crtsh(domain))
-    except Exception as e:
-        print(f"  [-] crt.sh error: {e}")
-
-    try:
-        subdomains.update(get_subdomains_rapiddns(domain))
-    except Exception as e:
-        print(f"  [-] RapidDNS error: {e}")
+    subdomains.update(get_subdomains_crtsh(domain))
+    subdomains.update(get_subdomains_rapiddns(domain))
 
     if subdomains:
         for sub in subdomains:
             print(f"  [+] {sub}")
-        filename = get_next_filename("subdomains", "txt")
-        with open(filename, 'w') as f:
-            for sub in subdomains:
-                f.write(sub + '\n')
-        print(f"  [*] Saved to {filename}")
+            write_output(f"[Subdomain] {sub}")
     else:
         print("  [-] No subdomains found.")
 
+
+def port_scan(domain):
+    print("\n[+] Port Scan:")
+    try:
+        ip = socket.gethostbyname(domain)
+        open_ports = []
+        for port in [21, 22, 23, 25, 53, 80, 110, 143, 443, 445, 8080]:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(1)
+            result = sock.connect_ex((ip, port))
+            if result == 0:
+                print(f"  [+] Port {port} is open")
+                write_output(f"[Port Open] {port}")
+                open_ports.append(port)
+            sock.close()
+    except Exception as e:
+        print(f"  [-] Error: {e}")
+
+
+def get_ip_geoip(domain):
+    print("\n[+] IP & GeoIP Info:")
+    try:
+        ip = socket.gethostbyname(domain)
+        print(f"  [+] IP Address: {ip}")
+        write_output(f"[IP] {ip}")
+        res = requests.get(f"https://ipinfo.io/{ip}/json")
+        data = res.json()
+        for key, val in data.items():
+            print(f"  {key.capitalize()}: {val}")
+            write_output(f"[GeoIP] {key}: {val}")
+    except Exception as e:
+        print(f"  [-] Error: {e}")
+
+
+def get_http_headers(domain):
+    print("\n[+] HTTP Headers:")
+    try:
+        url = f"http://{domain}"
+        res = requests.get(url, timeout=5)
+        for key, val in res.headers.items():
+            print(f"  {key}: {val}")
+            write_output(f"[Header] {key}: {val}")
+    except Exception as e:
+        print(f"  [-] Error: {e}")
+
+
+def detect_tech(domain):
+    print("\n[+] Technology Detection:")
+    try:
+        res = requests.get(f"http://{domain}", timeout=10)
+        tech = []
+        headers = res.headers
+        if "x-powered-by" in headers:
+            tech.append(headers["x-powered-by"])
+        if "server" in headers:
+            tech.append(headers["server"])
+        if tech:
+            for t in tech:
+                print(f"  [+] {t}")
+                write_output(f"[Tech] {t}")
+        else:
+            print("  [-] No tech info found.")
+    except Exception as e:
+        print(f"  [-] Error: {e}")
+
+
+def waf_detect(domain):
+    print("\n[+] WAF Detection:")
+    try:
+        waf = WAFW00F(target=domain)
+        results = waf.identwaf()
+        if results:
+            print(f"  [+] WAF Detected: {results}")
+            write_output(f"[WAF] Detected: {results}")
+        else:
+            print("  [-] No WAF detected.")
+    except Exception as e:
+        print(f"  [-] Error: {e}")
+
+
+def whois_lookup(domain):
+    print("\n[+] WHOIS Lookup:")
+    try:
+        info = whois.whois(domain)
+        for key, val in info.items():
+            print(f"  {key}: {val}")
+            write_output(f"[WHOIS] {key}: {val}")
+    except Exception as e:
+        print(f"  [-] Error: {e}")
+
+
+def full_scan(domain):
+    get_subdomains_all(domain)
+    port_scan(domain)
+    get_ip_geoip(domain)
+    get_http_headers(domain)
+    detect_tech(domain)
+    waf_detect(domain)
+    whois_lookup(domain)
+
+
 def main():
-    global scan_counter
+    global scan_counter, output_file
     show_logo()
+
     if not check_internet():
-        print(Fore.RED + "❗ No Internet Connection. Please connect and retry.")
+        print(Fore.RED + "❗ No Internet Connection.")
         return
 
     while True:
@@ -146,13 +222,10 @@ def main():
         if is_valid_domain(domain):
             break
         else:
-            print(Fore.YELLOW + "❗ Invalid domain format. Try again.")
+            print(Fore.YELLOW + "❗ Invalid domain. Try again.")
 
-    global output_file
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     output_file = f"scan_output_{scan_counter}.txt"
     scan_counter += 1
-
     with open(output_file, "w", encoding='utf-8') as f:
         f.write(f"--- Scan Results for {domain} ---\n")
 
@@ -160,23 +233,38 @@ def main():
         print("\nChoose Scan Option:")
         print("1. Subdomain Enumeration")
         print("2. Port Scan")
-        print("3. IP & GeoIP")
+        print("3. IP & GeoIP Info")
         print("4. HTTP Headers")
-        print("5. Tech Detection")
+        print("5. Technology Detection")
         print("6. WAF Detection")
         print("7. WHOIS Lookup")
         print("8. Full Scan")
         print("9. Exit")
 
-        choice = input("Enter option (1-9): ")
+        choice = input("Enter option (1-9): ").strip()
 
         if choice == "1":
             get_subdomains_all(domain)
+        elif choice == "2":
+            port_scan(domain)
+        elif choice == "3":
+            get_ip_geoip(domain)
+        elif choice == "4":
+            get_http_headers(domain)
+        elif choice == "5":
+            detect_tech(domain)
+        elif choice == "6":
+            waf_detect(domain)
+        elif choice == "7":
+            whois_lookup(domain)
+        elif choice == "8":
+            full_scan(domain)
         elif choice == "9":
-            print(f"\n🔚 Exiting. Results saved in {output_file}")
+            print(f"\n🔚 Exiting. Output saved in {output_file}")
             break
         else:
-            print(Fore.YELLOW + "❗ Feature not implemented yet. Only subdomain scan works now.")
+            print(Fore.YELLOW + "❗ Invalid choice. Try again.")
+
 
 if __name__ == "__main__":
     main()
