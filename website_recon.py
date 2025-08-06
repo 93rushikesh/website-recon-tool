@@ -8,12 +8,12 @@ import time
 from datetime import datetime
 from colorama import Fore, Style, init
 from wafw00f.main import WAFW00F
+from urllib.parse import urlparse
 
 init(autoreset=True)
 output_lock = threading.Lock()
 
 scan_counter = 1
-
 
 def show_logo():
     logo = r"""
@@ -30,17 +30,20 @@ def show_logo():
 """
     print(Fore.CYAN + logo)
 
-
 def write_output(text):
     with output_lock:
         with open(output_file, "a", encoding='utf-8') as f:
             f.write(text + "\n")
 
-
 def is_valid_domain(domain):
     pattern = r"^(?!\-)(?:[a-zA-Z0-9-]{1,63}\.)+[a-zA-Z]{2,}$"
     return re.match(pattern, domain) is not None
 
+def normalize_domain(domain):
+    parsed = urlparse(domain)
+    if parsed.scheme:
+        return parsed.netloc
+    return domain.split("/")[0]
 
 def safe_request(domain, path="/", headers=None):
     headers = headers or {'User-Agent': 'Mozilla/5.0'}
@@ -50,17 +53,15 @@ def safe_request(domain, path="/", headers=None):
         urls = [domain]
     for url in urls:
         try:
-            res = requests.get(url, headers=headers, timeout=5)
+            res = requests.get(url, headers=headers, timeout=10)
             if res.status_code == 200:
                 return res
         except:
             continue
     return None
 
-
 # Remaining functions stay unchanged
 # Only update output_file generation in `main` for numbered scans
-
 
 def main():
     global scan_counter
@@ -70,9 +71,8 @@ def main():
         return
 
     while True:
-        domain = input("🔎 Enter domain (e.g. example.com): ").strip()
-        if domain.startswith("http://") or domain.startswith("https://"):
-            domain = domain.split("//")[1].split("/")[0]
+        domain_input = input("🔎 Enter domain (e.g. example.com or https://example.com): ").strip()
+        domain = normalize_domain(domain_input)
         if is_valid_domain(domain):
             break
         else:
@@ -131,7 +131,6 @@ def main():
             break
         else:
             print(Fore.YELLOW + "❗ Invalid choice. Try again.")
-
 
 if __name__ == "__main__":
     main()
