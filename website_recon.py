@@ -4,11 +4,12 @@ import whois
 import json
 import threading
 import re
+import time
+from datetime import datetime
 from colorama import Fore, Style, init
 from wafw00f.main import WAFW00F
 
 init(autoreset=True)
-
 output_lock = threading.Lock()
 
 def show_logo():
@@ -28,8 +29,24 @@ def show_logo():
 
 def write_output(text):
     with output_lock:
-        with open("scan_output.txt", "a", encoding='utf-8') as f:
+        with open(output_file, "a", encoding='utf-8') as f:
             f.write(text + "\n")
+
+def is_valid_domain(domain):
+    pattern = r"^(?!\-)(?:[a-zA-Z0-9-]{1,63}\.)+[a-zA-Z]{2,}$"
+    return re.match(pattern, domain) is not None
+
+def safe_request(domain, path="/", headers=None):
+    headers = headers or {'User-Agent': 'Mozilla/5.0'}
+    urls = [f"https://{domain}{path}", f"http://{domain}{path}"]
+    for url in urls:
+        try:
+            res = requests.get(url, headers=headers, timeout=5)
+            if res.status_code == 200:
+                return res
+        except:
+            continue
+    return None
 
 def get_subdomains_all(domain):
     print("\n[+] Subdomain Enumeration (Multi-source):")
@@ -37,12 +54,14 @@ def get_subdomains_all(domain):
     try:
         url = f"https://rapiddns.io/subdomain/{domain}?full=1"
         response = requests.get(url, timeout=10)
-        matches = re.findall(r'<td>([a-zA-Z0-9._-]+\\.' + re.escape(domain) + r')</td>', response.text)
+        matches = re.findall(r'<td>([a-zA-Z0-9._-]+\.' + re.escape(domain) + r')</td>', response.text)
         for match in matches:
             subdomains.add(match.strip())
+        time.sleep(1)
 
         crt_url = f"https://crt.sh/?q=%25.{domain}&output=json"
         crt_response = requests.get(crt_url, timeout=10)
+        time.sleep(1)
         if crt_response.status_code == 200 and crt_response.text.strip().startswith("["):
             cert_data = crt_response.json()
             for entry in cert_data:
@@ -50,6 +69,8 @@ def get_subdomains_all(domain):
                 for sub in name.split("\n"):
                     if domain in sub:
                         subdomains.add(sub.strip())
+        else:
+            print(f"  [-] crt.sh request failed: {crt_response.status_code}")
     except Exception as e:
         print(f"  [-] Error during subdomain fetching: {e}")
 
@@ -107,11 +128,15 @@ def geoip_lookup(ip):
     write_output("\n[+] IP Geolocation:")
     try:
         res = requests.get(f"http://ip-api.com/json/{ip}", timeout=5)
-        data = res.json()
-        for field in ['country', 'regionName', 'city', 'org']:
-            line = f"  {field.title()} : {data.get(field)}"
-            print(line)
-            write_output(line)
+        if res.status_code == 200:
+            data = res.json()
+            for field in ['country', 'regionName', 'city', 'org']:
+                line = f"  {field.title()} : {data.get(field)}"
+                print(line)
+                write_output(line)
+        else:
+            print(f"  [-] GeoIP API failed: {res.status_code}")
+            write_output(f"  [-] GeoIP API failed: {res.status_code}")
     except Exception as e:
         print(Fore.RED + f"  [-] GeoIP Lookup failed: {e}")
         write_output(f"  [-] GeoIP Lookup failed: {e}")
@@ -119,21 +144,21 @@ def geoip_lookup(ip):
 def http_headers(domain):
     print(Fore.GREEN + "\n[+] HTTP Headers:")
     write_output("\n[+] HTTP Headers:")
-    try:
-        res = requests.get(f"https://{domain}", headers={'User-Agent': 'Mozilla/5.0'}, timeout=5)
+    res = safe_request(domain)
+    if res:
         for header, value in res.headers.items():
             line = f"  {header}: {value}"
             print(line)
             write_output(line)
-    except Exception as e:
-        print(Fore.RED + f"  [-] Error fetching headers: {e}")
-        write_output(f"  [-] Error fetching headers: {e}")
+    else:
+        print(Fore.RED + "  [-] Error fetching headers.")
+        write_output("  [-] Error fetching headers.")
 
 def tech_detect(domain):
     print(Fore.GREEN + "\n[+] Technology Detection:")
     write_output("\n[+] Technology Detection:")
-    try:
-        res = requests.get(f"https://{domain}", headers={'User-Agent': 'Mozilla/5.0'}, timeout=5)
+    res = safe_request(domain)
+    if res:
         headers = res.headers
         server = headers.get("Server", "Unknown")
         x_powered = headers.get("X-Powered-By", "Unknown")
@@ -141,25 +166,29 @@ def tech_detect(domain):
         print(f"  [TECH] X-Powered-By: {x_powered}")
         write_output(f"  [TECH] Server: {server}")
         write_output(f"  [TECH] X-Powered-By: {x_powered}")
-    except Exception as e:
-        print(Fore.RED + f"  [TECH] Not Detected: {e}")
-        write_output(f"  [TECH] Not Detected: {e}")
+    else:
+        print(Fore.RED + "  [TECH] Not Detected.")
+        write_output("  [TECH] Not Detected.")
 
 def waf_detect(domain):
     print(Fore.GREEN + "\n[+] WAF Detection:")
     write_output("\n[+] WAF Detection:")
     try:
-        res = requests.get(f"https://{domain}", headers={'User-Agent': 'Mozilla/5.0'}, timeout=5)
-        headers = str(res.headers).lower()
-        waf_keywords = ['cloudflare', 'sucuri', 'incapsula', 'akamai']
-        detected = [waf for waf in waf_keywords if waf in headers]
-        if detected:
-            line = f"  [WAF] Basic Detected: {', '.join(detected)}"
-            print(line)
-            write_output(line)
+        res = safe_request(domain)
+        if res:
+            headers = str(res.headers).lower()
+            waf_keywords = ['cloudflare', 'sucuri', 'incapsula', 'akamai']
+            detected = [waf for waf in waf_keywords if waf in headers]
+            if detected:
+                line = f"  [WAF] Basic Detected: {', '.join(detected)}"
+                print(line)
+                write_output(line)
+            else:
+                print("  [WAF] Basic: Not Detected")
+                write_output("  [WAF] Basic: Not Detected")
         else:
-            print("  [WAF] Basic: Not Detected")
-            write_output("  [WAF] Basic: Not Detected")
+            print("  [WAF] Basic Detection Failed.")
+            write_output("  [WAF] Basic Detection Failed.")
     except Exception as e:
         print(Fore.RED + f"  [WAF] Basic Detection Failed: {e}")
         write_output(f"  [WAF] Basic Detection Failed: {e}")
@@ -168,9 +197,10 @@ def waf_detect(domain):
         waf = WAFW00F(f"https://{domain}")
         result = waf.identwaf()
         if result:
-            line = f"  [WAF] Advanced Detected: {result[0]}"
-            print(line)
-            write_output(line)
+            for r in result:
+                line = f"  [WAF] Advanced Detected: {r}"
+                print(line)
+                write_output(line)
         else:
             print("  [WAF] Advanced: Not Detected")
             write_output("  [WAF] Advanced: Not Detected")
@@ -183,6 +213,8 @@ def whois_lookup(domain):
     write_output("\n[+] WHOIS Lookup:")
     try:
         data = whois.whois(domain)
+        if not data or all(value is None for value in data.values()):
+            raise Exception("WHOIS data not available or unsupported TLD.")
         whois_data = json.dumps(data, indent=2, default=str)
         print(whois_data)
         write_output(whois_data)
@@ -203,9 +235,17 @@ def main():
         print(Fore.RED + "❗ No Internet Connection. Please connect and retry.")
         return
 
-    domain = input("🔎 Enter domain (e.g. example.com): ").strip()
+    while True:
+        domain = input("🔎 Enter domain (e.g. example.com): ").strip()
+        if is_valid_domain(domain):
+            break
+        else:
+            print(Fore.YELLOW + "❗ Invalid domain format. Try again.")
 
-    with open("scan_output.txt", "w", encoding='utf-8') as f:
+    global output_file
+    output_file = f"scan_output_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+
+    with open(output_file, "w", encoding='utf-8') as f:
         f.write(f"--- Scan Results for {domain} ---\n")
 
     while True:
@@ -249,7 +289,7 @@ def main():
             waf_detect(domain)
             whois_lookup(domain)
         elif choice == "9":
-            print("\n🔚 Exiting. Results saved in scan_output.txt")
+            print(f"\n🔚 Exiting. Results saved in {output_file}")
             break
         else:
             print(Fore.YELLOW + "❗ Invalid choice. Try again.")
