@@ -10,6 +10,7 @@ from datetime import datetime
 from colorama import Fore, Style, init
 from wafw00f.main import WAFW00F
 from urllib.parse import urlparse
+from bs4 import BeautifulSoup
 
 init(autoreset=True)
 output_lock = threading.Lock()
@@ -75,6 +76,38 @@ def get_next_filename(prefix, ext):
         i += 1
     return f"{prefix}_output{i}.{ext}"
 
+def get_subdomains_crtsh(domain):
+    url = f"https://crt.sh/?q=%.{domain}&output=json"
+    try:
+        res = requests.get(url, timeout=10)
+        if res.status_code == 200:
+            data = res.json()
+            subdomains = set()
+            for entry in data:
+                names = entry['name_value'].split("\n")
+                for name in names:
+                    if domain in name:
+                        subdomains.add(name.strip())
+            return subdomains
+    except Exception as e:
+        raise e
+    return set()
+
+def get_subdomains_rapiddns(domain):
+    url = f"https://rapiddns.io/subdomain/{domain}?full=1"
+    try:
+        res = requests.get(url, timeout=10)
+        soup = BeautifulSoup(res.text, 'html.parser')
+        rows = soup.find_all('td')
+        subdomains = set()
+        for row in rows:
+            if domain in row.text:
+                subdomains.add(row.text.strip())
+        return subdomains
+    except Exception as e:
+        raise e
+    return set()
+
 def get_subdomains_all(domain):
     print("\n[+] Subdomain Enumeration (Multi-source):")
     subdomains = set()
@@ -108,7 +141,7 @@ def main():
         return
 
     while True:
-        domain_input = input("🔎 Enter domain (e.g. example.com or https://example.com): ").strip()
+        domain_input = input("🔎 Enter domain (e.g. example.com): ").strip()
         domain = normalize_domain(domain_input)
         if is_valid_domain(domain):
             break
@@ -139,35 +172,11 @@ def main():
 
         if choice == "1":
             get_subdomains_all(domain)
-        elif choice == "2":
-            port_scan(domain)
-        elif choice == "3":
-            ip = get_ip(domain)
-            if ip:
-                geoip_lookup(ip)
-        elif choice == "4":
-            http_headers(domain)
-        elif choice == "5":
-            tech_detect(domain)
-        elif choice == "6":
-            waf_detect(domain)
-        elif choice == "7":
-            whois_lookup(domain)
-        elif choice == "8":
-            get_subdomains_all(domain)
-            port_scan(domain)
-            ip = get_ip(domain)
-            if ip:
-                geoip_lookup(ip)
-            http_headers(domain)
-            tech_detect(domain)
-            waf_detect(domain)
-            whois_lookup(domain)
         elif choice == "9":
             print(f"\n🔚 Exiting. Results saved in {output_file}")
             break
         else:
-            print(Fore.YELLOW + "❗ Invalid choice. Try again.")
+            print(Fore.YELLOW + "❗ Feature not implemented yet. Only subdomain scan works now.")
 
 if __name__ == "__main__":
     main()
