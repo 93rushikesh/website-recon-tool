@@ -9,7 +9,7 @@ This tool performs:
 - 🔸 WHOIS lookup
 - 🔸 IP address & geolocation
 - 🔸 Technology stack detection
-- 🔸 Basic firewall detection
+- 🔸 firewall detection
 
 ---
 
@@ -38,7 +38,7 @@ Run the tool:
 python website_recon.py
 ```
 Then enter the target domain:
-Enter Domain (e.g. example.com): google.com
+Enter Domain (e.g. example.com): Certifiedhacker.com
 
 ## 🧾 Output Example
 
@@ -54,7 +54,7 @@ Enter Domain (e.g. example.com): google.com
 
 ⚙️ Technology detection (Cloudflare, Google Server, etc.)
 
-🛡️ Firewall clues (based on headers)
+🛡️ Firewall
 
 📦 Requirements
 Listed in requirements.txt:
@@ -76,3 +76,4 @@ I enjoy diving deep into security systems, finding vulnerabilities, and helping 
 - 🐙 GitHub: [93rushikesh](https://github.com/93rushikesh)  
 - 💬 Telegram: [@CIPHER_372](https://t.me/CIPHER_372)  
 - 📸 Instagram: [@_gadekar_rushikesh](https://instagram.com/_gadekar_rushikesh)
+- 🔗 LinkedIn (https://www.linkedin.com/in/gadekarrushikesh/)
