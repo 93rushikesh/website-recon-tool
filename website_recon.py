@@ -11,8 +11,6 @@ import sys
 from datetime import datetime
 from colorama import Fore, Style, init
 from urllib.parse import urlparse
-
-# Auto-install beautifulsoup4 if missing
 try:
     from bs4 import BeautifulSoup
 except ImportError:
