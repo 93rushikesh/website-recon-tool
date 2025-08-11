@@ -69,11 +69,12 @@ Install with:
 ```
 pip install -r requirements.txt
 ```
-👨‍💻 Author
-Name: Rushikesh Gadekar
-GitHub: 93rushikesh
-Telegram: @CIPHER_372
-Instagram: @_gadekar_rushikesh
-LinkedIn: gadekarrushikesh
+## 👨‍💻 Author
+**Name:** Rushikesh Gadekar  
+**GitHub:** [93rushikesh](https://github.com/93rushikesh)  
+**Telegram:** [@CIPHER_372](https://t.me/CIPHER_372)  
+**Instagram:** [@_gadekar_rushikesh](https://instagram.com/_gadekar_rushikesh)  
+**LinkedIn:** [gadekarrushikesh](https://linkedin.com/in/gadekarrushikesh)  
+
 
 Rushikesh Gadekar – Cybersecurity Enthusiast 🛡️ | Ethical Hacker 💻 | Bug Bounty Hunter 🐞 | Cyber Investigator 🔍
