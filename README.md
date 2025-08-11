@@ -54,7 +54,19 @@ Enter Domain (e.g. example.com): certifiedhacker.com
 ⚙️ Technology: Hosting provider & tech stack.
 
 🛡️ Firewall: Detected Cloudflare WAF.
+📦 Requirements
+requests
 
+python-whois
+
+colorama
+
+wafw00f
+
+Install with:
+```
+pip install -r requirements.txt
+```
 👨‍💻 Author
 Rushikesh Gadekar
 ```
