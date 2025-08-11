@@ -1,26 +1,24 @@
-🔍 Website Recon Tool
-A simple yet powerful information gathering tool for reconnaissance of websites.
+  🔍 Website Recon Tool
 
-Features:
+A simple yet powerful **information gathering tool** for website reconnaissance.
 
-🔸 Subdomain enumeration – Find related subdomains of a domain.
+---
 
-🔸 Port scanning – Detect open ports (multi-threaded for speed).
+   ✨ Features
 
-🔸 HTTP headers extraction – View server details & security headers.
+- 🔸 **Subdomain Enumeration** – Find related subdomains of a domain.  
+- 🔸 **Port Scanning** – Detect open ports (multi-threaded for speed).  
+- 🔸 **HTTP Headers Extraction** – View server details & security headers.  
+- 🔸 **WHOIS Lookup** – Get domain registration info.  
+- 🔸 **IP Address & Geolocation** – Locate the server worldwide.  
+- 🔸 **Technology Stack Detection** – Identify hosting & CMS tech.  
+- 🔸 **Firewall Detection** – Check if WAF is enabled.  
 
-🔸 WHOIS lookup – Get domain registration info.
+---
 
-🔸 IP address & geolocation – Locate the server worldwide.
+  ⚙️ Installation
 
-🔸 Technology stack detection – Identify hosting & CMS tech.
-
-🔸 Firewall detection – Check if WAF is enabled.
-
-⚙️ Installation
-bash
-कॉपी करा
-बदल करा
+```bash
 git clone https://github.com/93rushikesh/website-recon-tool.git
 cd website-recon-tool
 
@@ -29,24 +27,20 @@ python3 -m venv myenv
 source myenv/bin/activate
 
 pip install -r requirements.txt
-If on Linux:
-
-bash
-कॉपी करा
-बदल करा
+```
+  If on Linux And Need Sudo:
+```
 sudo pip install -r requirements.txt
-🚀 Usage
-bash
-कॉपी करा
-बदल करा
+```
+ 🚀 Usage
+```
 python website_recon.py
-Example:
-
-java
-कॉपी करा
-बदल करा
+```
+  Example:
+```
 Enter Domain (e.g. example.com): certifiedhacker.com
-🧾 Example Output
+```
+  🧾 Example Output
 ✅ Subdomains: Found list of related domains.
 
 🔓 Open Ports: Detected running services.
@@ -61,23 +55,9 @@ Enter Domain (e.g. example.com): certifiedhacker.com
 
 🛡️ Firewall: Detected Cloudflare WAF.
 
-📦 Requirements
-nginx
-कॉपी करा
-बदल करा
-requests
-python-whois
-colorama
-wafw00f
-Install with:
-
-bash
-कॉपी करा
-बदल करा
-pip install -r requirements.txt
 👨‍💻 Author
 Rushikesh Gadekar
-
+```
 🐙 GitHub: 93rushikesh
 
 💬 Telegram: @CIPHER_372
@@ -85,7 +65,7 @@ Rushikesh Gadekar
 📸 Instagram: @_gadekar_rushikesh
 
 🔗 LinkedIn: gadekarrushikesh
-
+```
 🙋‍♂️ About Me
 I’m a cybersecurity enthusiast 🛡️, ethical hacker 💻, bug bounty hunter 🐞, and cyber investigator 🔍.
 I love exploring vulnerabilities, securing systems, and building open-source tools to make the digital world safer.
