@@ -39,8 +39,9 @@ sudo pip install -r requirements.txt
 python website_recon.py
 ```
 Example
-
+```
 Enter Domain (e.g. example.com): certifiedhacker.com
+```
 
 ✅ Subdomains → Found related domains.
 
