@@ -56,17 +56,16 @@ Enter Domain (e.g. example.com): certifiedhacker.com
 
 🛡 Firewall → Cloudflare WAF detected.
 
-```
 📦 Requirements
-requests
+  requests
 
-python-whois
+  python-whois
 
-colorama
+  colorama
 
-wafw00f
+  wafw00f
 
-Install Command
+  Install Command
 
 ```
 pip install -r requirements.txt
