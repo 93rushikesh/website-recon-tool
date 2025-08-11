@@ -27,7 +27,9 @@ source myenv/bin/activate
 pip install colorama
 pip install wafw00f
 pip install -r requirements.txt
+```
 If you're using Linux and need sudo:
+```
 sudo pip install -r requirements.txt
 ```
 
@@ -37,14 +39,23 @@ sudo pip install -r requirements.txt
 python website_recon.py
 ```
 Example
+
 Enter Domain (e.g. example.com): certifiedhacker.com
+
 ✅ Subdomains → Found related domains.
+
 🔓 Open Ports → Services & running applications detected.
+
 📥 HTTP Headers → Server & security insights.
+
 🧾 WHOIS Info → Owner, email, creation & expiry dates.
+
 🌍 IP Location → Country, city, ISP.
+
 ⚙️ Technology → Hosting, CMS, frameworks.
+
 🛡 Firewall → Cloudflare WAF detected.
+
 ```
 📦 Requirements
 requests
