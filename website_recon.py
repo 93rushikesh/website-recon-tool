@@ -1,4 +1,137 @@
-write_output(f"[GeoIP] {key}: {val}")
+import requests
+import socket
+import whois
+import json
+import threading
+import re
+import time
+import os
+import subprocess
+import sys
+from datetime import datetime
+from colorama import Fore, Style, init
+from urllib.parse import urlparse
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "beautifulsoup4"])
+    from bs4 import BeautifulSoup
+
+init(autoreset=True)
+output_lock = threading.Lock()
+scan_counter = 1
+
+def check_internet(host="8.8.8.8", port=53, timeout=3):
+    try:
+        socket.setdefaulttimeout(timeout)
+        socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
+        return True
+    except socket.error:
+        return False
+
+def show_logo():
+    logo = r"""
+██████╗░░█████╗░██████╗░██████╗░██████╗░░█████╗░██████╗░░██████╗
+██╔══██╗██╔══██╗██╔══██╗██╔══██╗██╔══██╗██╔══██╗██╔══██╗██╔════╝
+██║░░██║██║░░██║██║░░██║██████╦╝██████╔╝███████║██████╔╝╚█████╗░
+██║░░██║██║░░██║██║░░██║██╔══██╗██╔═══╝░██╔══██║██╔═══╝░░╚═══██╗
+██████╔╝╚█████╔╝██████╔╝██████╦╝██║░░░░░██║░░██║██║░░░░░██████╔╝
+╚═════╝░░╚════╝░╚═════╝░╚═════╝░╚═╝░░░░░╚═╝░░╚═╝╚═╝░░░░░╚═════╝░
+
+█▀█	█░█	█▀█	█░█	█	█▀	█▄░█	█▀▀	█▀█
+█▀▀	█▄█	█▄█	█▄█	█	▄█	█░▀█	██▄	█▀▄
+         RUSHIKESH's Web Recon Tool
+"""
+    print(Fore.CYAN + logo)
+
+def write_output(text):
+    with output_lock:
+        with open(output_file, "a", encoding='utf-8') as f:
+            f.write(text + "\n")
+
+def is_valid_domain(domain):
+    pattern = r"^(?!\-)(?:[a-zA-Z0-9-]{1,63}\.)+[a-zA-Z]{2,}$"
+    return re.match(pattern, domain) is not None
+
+def normalize_domain(domain):
+    parsed = urlparse(domain)
+    if parsed.scheme:
+        return parsed.netloc
+    return domain.split("/")[0]
+
+def get_subdomains_crtsh(domain):
+    url = f"https://crt.sh/?q=%.{domain}&output=json"
+    try:
+        res = requests.get(url, timeout=10)
+        if res.status_code == 200:
+            data = res.json()
+            subdomains = set()
+            for entry in data:
+                names = entry['name_value'].split("\n")
+                for name in names:
+                    if domain in name:
+                        subdomains.add(name.strip())
+            return subdomains
+    except Exception:
+        pass
+    return set()
+
+def get_subdomains_rapiddns(domain):
+    url = f"https://rapiddns.io/subdomain/{domain}?full=1"
+    try:
+        res = requests.get(url, timeout=10)
+        soup = BeautifulSoup(res.text, 'html.parser')
+        rows = soup.find_all('td')
+        subdomains = set()
+        for row in rows:
+            if domain in row.text:
+                subdomains.add(row.text.strip())
+        return subdomains
+    except Exception:
+        pass
+    return set()
+
+def get_subdomains_all(domain):
+    print("\n[+] Subdomain Enumeration:")
+    subdomains = set()
+    subdomains.update(get_subdomains_crtsh(domain))
+    subdomains.update(get_subdomains_rapiddns(domain))
+
+    if subdomains:
+        for sub in subdomains:
+            print(f"  [+] {sub}")
+            write_output(f"[Subdomain] {sub}")
+    else:
+        print("  [-] No subdomains found.")
+
+def port_scan(domain):
+    print("\n[+] Port Scan:")
+    try:
+        ip = socket.gethostbyname(domain)
+        open_ports = []
+        for port in [21, 22, 23, 25, 53, 80, 110, 143, 443, 445, 8080]:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(1)
+            result = sock.connect_ex((ip, port))
+            if result == 0:
+                print(f"  [+] Port {port} is open")
+                write_output(f"[Port Open] {port}")
+                open_ports.append(port)
+            sock.close()
+    except Exception as e:
+        print(f"  [-] Error: {e}")
+
+def get_ip_geoip(domain):
+    print("\n[+] IP & GeoIP Info:")
+    try:
+        ip = socket.gethostbyname(domain)
+        print(f"  [+] IP Address: {ip}")
+        write_output(f"[IP] {ip}")
+        res = requests.get(f"https://ipinfo.io/{ip}/json")
+        data = res.json()
+        for key, val in data.items():
+            print(f"  {key.capitalize()}: {val}")
+            write_output(f"[GeoIP] {key}: {val}")
     except Exception as e:
         print(f"  [-] Error: {e}")
 
@@ -122,5 +255,5 @@ def main():
         else:
             print(Fore.YELLOW + "❗ Invalid choice. Try again.")
 
-if name == "__main__":
+if __name__ == "__main__":
     main()
