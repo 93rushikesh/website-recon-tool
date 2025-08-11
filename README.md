@@ -1,63 +1,52 @@
-🔍 Website Recon Tool
-A simple and effective information gathering tool for reconnaissance of websites.
+🕵️‍♂️ Website Recon Tool:
+  description: "A powerful & advanced information gathering tool for professional website reconnaissance."
 
-This tool performs:
+✨ Features:
+  - 🌐 Subdomain Enumeration: "Discover hidden & related subdomains."
+  - 🚪 Port Scanning: "Identify open ports & services (multi-threaded for speed)."
+  - 📜 HTTP Headers Extraction: "Reveal server, framework & security headers."
+  - 🔍 WHOIS Lookup: "Domain owner details, emails, creation & expiry."
+  - 📡 IP Address & Geolocation: "Pinpoint server’s global location."
+  - 🛠 Technology Stack Detection: "Detect hosting provider, CMS, frameworks."
+  - 🛡 Firewall Detection: "Identify WAFs like Cloudflare."
 
-🔸 Subdomain enumeration
-🔸 Port scanning
-🔸 HTTP headers extraction
-🔸 WHOIS lookup
-🔸 IP address & geolocation
-🔸 Technology stack detection
-🔸 firewall detection
-⚙️ Installation
-Clone the repository and install dependencies:
+⚙️ Installation:
+  - command: |
+      git clone https://github.com/93rushikesh/website-recon-tool.git
+      cd website-recon-tool
+      sudo apt install python3-full
+      python3 -m venv myenv
+      source myenv/bin/activate
+      pip install -r requirements.txt
+  - linux_sudo_install: |
+      sudo pip install -r requirements.txt
 
-git clone https://github.com/93rushikesh/website-recon-tool.git
-cd website-recon-tool
-sudo apt install python3-full
-python3 -m venv myenv
-source myenv/bin/activate
-pip install colorama
-pip install wafw00f
-pip install -r requirements.txt
-If you're using Linux and need sudo:
+🚀 Usage:
+  - command: |
+      python website_recon.py
+  - example:
+      input: "Enter Domain (e.g. example.com): certifiedhacker.com"
+      output:
+        - "✅ Subdomains → Found related domains."
+        - "🔓 Open Ports → Services & running applications detected."
+        - "📥 HTTP Headers → Server & security insights."
+        - "🧾 WHOIS Info → Owner, email, creation & expiry dates."
+        - "🌍 IP Location → Country, city, ISP."
+        - "⚙️ Technology → Hosting, CMS, frameworks."
+        - "🛡 Firewall → Cloudflare WAF detected."
 
-sudo pip install -r requirements.txt
-🚀 Usage
-Run the tool:
+📦 Requirements:
+  - requests
+  - python-whois
+  - colorama
+  - wafw00f
+  - install_command: "pip install -r requirements.txt"
 
-python website_recon.py
-Then enter the target domain: Enter Domain (e.g. example.com): Certifiedhacker.com
+  ## 👨‍💻 Author
+**Name:** Rushikesh Gadekar  
 
-🧾 Output Example
-✅ Subdomains
-
-🔓 Open ports
-
-📥 HTTP response headers
-
-🧾 WHOIS info (registrant, emails, etc.)
-
-🌍 IP address and location
-
-⚙️ Technology detection (Cloudflare, Google Server, etc.)
-
-🛡️ Firewall
-
-📦 Requirements Listed in requirements.txt: requests python-whois Install with:
-
-pip install -r requirements.txt
-👨‍💻 Author
-Rushikesh Gadekar
-GitHub: https://github.com/93rushikesh
-
-🙋‍♂️ About Me
-I'm Rushikesh Gadekar, a passionate cybersecurity enthusiast 🛡️, ethical hacker 💻, bug bounty hunter 🐞, and a cyber investigator.
-I enjoy diving deep into security systems, finding vulnerabilities, and helping improve digital safety through open-source tools and ethical practices.
-
-📫 Contact Me:
-🐙 GitHub: 93rushikesh
-💬 Telegram: @CIPHER_372
-📸 Instagram: @_gadekar_rushikesh
-🔗 LinkedIn: gadekarrushikesh
+- 🐙 **GitHub:** [93rushikesh](https://github.com/93rushikesh)  
+- 📢 **Telegram:** [@CIPHER_372](https://t.me/CIPHER_372)  
+- 📸 **Instagram:** [@_gadekar_rushikesh](https://instagram.com/_gadekar_rushikesh)  
+- 💼 **LinkedIn:** [gadekarrushikesh](https://linkedin.com/in/gadekarrushikesh)
+- Bio: "Cybersecurity Enthusiast 🛡️ | Ethical Hacker 💻 | Bug Bounty Hunter 🐞 | Cyber Investigator 🔍"
