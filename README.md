@@ -69,7 +69,7 @@ pip install -r requirements.txt
 ```
 👨‍💻 Author
 Rushikesh Gadekar
-```
+
 🐙 GitHub: 93rushikesh
 
 💬 Telegram: @CIPHER_372
@@ -77,7 +77,7 @@ Rushikesh Gadekar
 📸 Instagram: @_gadekar_rushikesh
 
 🔗 LinkedIn: gadekarrushikesh
-```
+
 🙋‍♂️ About Me
 I’m a cybersecurity enthusiast 🛡️, ethical hacker 💻, bug bounty hunter 🐞, and cyber investigator 🔍.
 I love exploring vulnerabilities, securing systems, and building open-source tools to make the digital world safer.
