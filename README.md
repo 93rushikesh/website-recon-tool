@@ -1,81 +1,63 @@
-**🕵️‍♂️ Website Recon Tool**
+🔍 Website Recon Tool
+A simple and effective information gathering tool for reconnaissance of websites.
 
-A powerful & advanced information gathering tool for professional website reconnaissance.
+This tool performs:
 
-✨ Features
-🌐 Subdomain Enumeration – Discover hidden & related subdomains.
-
-🚪 Port Scanning – Identify open ports & services (multi-threaded for speed).
-
-📜 HTTP Headers Extraction – Reveal server, framework & security headers.
-
-🔍 WHOIS Lookup – Domain owner details, emails, creation & expiry dates.
-
-📡 IP Address & Geolocation – Pinpoint server’s global location.
-
-🛠 Technology Stack Detection – Detect hosting provider, CMS, frameworks.
-
-🛡 Firewall Detection – Identify WAFs like Cloudflare.
-
+🔸 Subdomain enumeration
+🔸 Port scanning
+🔸 HTTP headers extraction
+🔸 WHOIS lookup
+🔸 IP address & geolocation
+🔸 Technology stack detection
+🔸 firewall detection
 ⚙️ Installation
-```
+Clone the repository and install dependencies:
+
 git clone https://github.com/93rushikesh/website-recon-tool.git
 cd website-recon-tool
-
 sudo apt install python3-full
 python3 -m venv myenv
 source myenv/bin/activate
-
+pip install colorama
+pip install wafw00f
 pip install -r requirements.txt
-```
-If on Linux and need sudo:
-```
+If you're using Linux and need sudo:
+
 sudo pip install -r requirements.txt
-```
 🚀 Usage
-```
+Run the tool:
+
 python website_recon.py
-```
-Example:
-```
-Enter Domain (e.g. example.com): certifiedhacker.com
-```
-🧾 Example Output
-✅ Subdomains → Found related domains.
+Then enter the target domain: Enter Domain (e.g. example.com): Certifiedhacker.com
 
-🔓 Open Ports → Services & running applications detected.
+🧾 Output Example
+✅ Subdomains
 
-📥 HTTP Headers → Server & security insights.
+🔓 Open ports
 
-🧾 WHOIS Info → Owner, email, creation & expiry dates.
+📥 HTTP response headers
 
-🌍 IP Location → Country, city, ISP.
+🧾 WHOIS info (registrant, emails, etc.)
 
-⚙️ Technology → Hosting, CMS, frameworks.
+🌍 IP address and location
 
-🛡 Firewall → Cloudflare WAF detected.
+⚙️ Technology detection (Cloudflare, Google Server, etc.)
 
+🛡️ Firewall
 
-📦 Requirements
-requests
+📦 Requirements Listed in requirements.txt: requests python-whois Install with:
 
-python-whois
-
-colorama
-
-wafw00f
-
-Install with:
-```
 pip install -r requirements.txt
-```
-## 👨‍💻 Author
-**Name:** Rushikesh Gadekar  
+👨‍💻 Author
+Rushikesh Gadekar
+GitHub: https://github.com/93rushikesh
 
-- 🐙 **GitHub:** [93rushikesh](https://github.com/93rushikesh)  
-- 📢 **Telegram:** [@CIPHER_372](https://t.me/CIPHER_372)  
-- 📸 **Instagram:** [@_gadekar_rushikesh](https://instagram.com/_gadekar_rushikesh)  
-- 💼 **LinkedIn:** [gadekarrushikesh](https://linkedin.com/in/gadekarrushikesh)  
+🙋‍♂️ About Me
+I'm Rushikesh Gadekar, a passionate cybersecurity enthusiast 🛡️, ethical hacker 💻, bug bounty hunter 🐞, and a cyber investigator.
+I enjoy diving deep into security systems, finding vulnerabilities, and helping improve digital safety through open-source tools and ethical practices.
 
-
-Rushikesh Gadekar – Cybersecurity Enthusiast 🛡️ | Ethical Hacker 💻 | Bug Bounty Hunter 🐞 | Cyber Investigator 🔍
+📫 Contact Me:
+🐙 GitHub: 93rushikesh
+💬 Telegram: @CIPHER_372
+📸 Instagram: @_gadekar_rushikesh
+🔗 LinkedIn: gadekarrushikesh
