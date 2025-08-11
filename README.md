@@ -1,4 +1,5 @@
 🕵️‍♂️ Website Recon Tool
+
 A powerful & advanced information gathering tool for professional website reconnaissance.
 
 ✨ Features
@@ -68,12 +69,11 @@ Install with:
 ```
 pip install -r requirements.txt
 ```
-```
 👨‍💻 Author
 Name: Rushikesh Gadekar
 GitHub: 93rushikesh
 Telegram: @CIPHER_372
 Instagram: @_gadekar_rushikesh
 LinkedIn: gadekarrushikesh
-```
+
 Rushikesh Gadekar – Cybersecurity Enthusiast 🛡️ | Ethical Hacker 💻 | Bug Bounty Hunter 🐞 | Cyber Investigator 🔍
