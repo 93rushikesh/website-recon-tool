@@ -54,8 +54,8 @@ Enter Domain (e.g. example.com): certifiedhacker.com
 ⚙️ Technology: Hosting provider & tech stack.
 
 🛡️ Firewall: Detected Cloudflare WAF.
-📦 Requirements
-requests
+
+  📦 Requirements requests
 
 python-whois
 
