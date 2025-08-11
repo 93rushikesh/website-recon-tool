@@ -1,4 +1,4 @@
-🕵️‍♂️ Website Recon Tool
+**🕵️‍♂️ Website Recon Tool**
 
 A powerful & advanced information gathering tool for professional website reconnaissance.
 
