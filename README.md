@@ -1,24 +1,23 @@
-  🔍 Website Recon Tool
+🕵️‍♂️ Website Recon Tool
+A powerful & advanced information gathering tool for professional website reconnaissance.
 
-A simple yet powerful **information gathering tool** for website reconnaissance.
+✨ Features
+🌐 Subdomain Enumeration – Discover hidden & related subdomains.
 
----
+🚪 Port Scanning – Identify open ports & services (multi-threaded for speed).
 
-   ✨ Features
+📜 HTTP Headers Extraction – Reveal server, framework & security headers.
 
-- 🔸 **Subdomain Enumeration** – Find related subdomains of a domain.  
-- 🔸 **Port Scanning** – Detect open ports (multi-threaded for speed).  
-- 🔸 **HTTP Headers Extraction** – View server details & security headers.  
-- 🔸 **WHOIS Lookup** – Get domain registration info.  
-- 🔸 **IP Address & Geolocation** – Locate the server worldwide.  
-- 🔸 **Technology Stack Detection** – Identify hosting & CMS tech.  
-- 🔸 **Firewall Detection** – Check if WAF is enabled.  
+🔍 WHOIS Lookup – Domain owner details, emails, creation & expiry.
 
----
+📡 IP Address & Geolocation – Pinpoint server’s global location.
 
-  ⚙️ Installation
+🛠 Technology Stack Detection – Detect hosting provider, CMS, frameworks.
 
-```bash
+🛡 Firewall Detection – Identify WAFs like Cloudflare.
+
+⚙️ Installation
+```
 git clone https://github.com/93rushikesh/website-recon-tool.git
 cd website-recon-tool
 
@@ -28,34 +27,26 @@ source myenv/bin/activate
 
 pip install -r requirements.txt
 ```
-  If on Linux And Need Sudo:
+If on Linux and need sudo:
 ```
 sudo pip install -r requirements.txt
 ```
- 🚀 Usage
+🚀 Usage
 ```
 python website_recon.py
 ```
-  Example:
-```
-Enter Domain (e.g. example.com): certifiedhacker.com
-```
-  🧾 Example Output
-✅ Subdomains: Found list of related domains.
+Example:Enter Domain (e.g. example.com): certifiedhacker.com
+🧾 Example Output
+✅ Subdomains → Found related domains.
+🔓 Open Ports → Services & running applications detected.
+📥 HTTP Headers → Server & security insights.
+🧾 WHOIS Info → Owner, email, creation & expiry dates.
+🌍 IP Location → Country, city, ISP.
+⚙️ Technology → Hosting, CMS, frameworks.
+🛡 Firewall → Cloudflare WAF detected.
 
-🔓 Open Ports: Detected running services.
-
-📥 HTTP Headers: Security & server details.
-
-🧾 WHOIS Info: Owner, email, creation & expiry dates.
-
-🌍 IP Location: Country, city & ISP info.
-
-⚙️ Technology: Hosting provider & tech stack.
-
-🛡️ Firewall: Detected Cloudflare WAF.
-
-  📦 Requirements requests
+📦 Requirements
+requests
 
 python-whois
 
@@ -68,16 +59,9 @@ Install with:
 pip install -r requirements.txt
 ```
 👨‍💻 Author
-Rushikesh Gadekar
-
-🐙 GitHub: 93rushikesh
-
-💬 Telegram: @CIPHER_372
-
-📸 Instagram: @_gadekar_rushikesh
-
-🔗 LinkedIn: gadekarrushikesh
-
-🙋‍♂️ About Me
-I’m a cybersecurity enthusiast 🛡️, ethical hacker 💻, bug bounty hunter 🐞, and cyber investigator 🔍.
-I love exploring vulnerabilities, securing systems, and building open-source tools to make the digital world safer.
+Name: "Rushikesh Gadekar"
+github: "93rushikesh"
+telegram: "@CIPHER_372"
+instagram: "@_gadekar_rushikesh"
+linkedin: "gadekarrushikesh"
+Rushikesh Gadekar – Cybersecurity Enthusiast 🛡️ | Ethical Hacker 💻 | Bug Bounty Hunter 🐞 | Cyber Investigator 🔍
