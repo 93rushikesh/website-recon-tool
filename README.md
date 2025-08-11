@@ -8,7 +8,7 @@ A powerful & advanced information gathering tool for professional website reconn
 
 📜 HTTP Headers Extraction – Reveal server, framework & security headers.
 
-🔍 WHOIS Lookup – Domain owner details, emails, creation & expiry.
+🔍 WHOIS Lookup – Domain owner details, emails, creation & expiry dates.
 
 📡 IP Address & Geolocation – Pinpoint server’s global location.
 
@@ -35,15 +35,25 @@ sudo pip install -r requirements.txt
 ```
 python website_recon.py
 ```
-Example:Enter Domain (e.g. example.com): certifiedhacker.com
+Example:
+```
+Enter Domain (e.g. example.com): certifiedhacker.com
+```
 🧾 Example Output
 ✅ Subdomains → Found related domains.
+
 🔓 Open Ports → Services & running applications detected.
+
 📥 HTTP Headers → Server & security insights.
+
 🧾 WHOIS Info → Owner, email, creation & expiry dates.
+
 🌍 IP Location → Country, city, ISP.
+
 ⚙️ Technology → Hosting, CMS, frameworks.
+
 🛡 Firewall → Cloudflare WAF detected.
+
 
 📦 Requirements
 requests
@@ -58,10 +68,12 @@ Install with:
 ```
 pip install -r requirements.txt
 ```
+```
 👨‍💻 Author
-Name: "Rushikesh Gadekar"
-github: "93rushikesh"
-telegram: "@CIPHER_372"
-instagram: "@_gadekar_rushikesh"
-linkedin: "gadekarrushikesh"
+Name: Rushikesh Gadekar
+GitHub: 93rushikesh
+Telegram: @CIPHER_372
+Instagram: @_gadekar_rushikesh
+LinkedIn: gadekarrushikesh
+```
 Rushikesh Gadekar – Cybersecurity Enthusiast 🛡️ | Ethical Hacker 💻 | Bug Bounty Hunter 🐞 | Cyber Investigator 🔍
