@@ -16,30 +16,27 @@
 
 ---
 
-## ⚙️ Installation
-
-```bash
-# Clone the repository
+⚙️ Installation
+Clone the repository and install dependencies:
+```
 git clone https://github.com/93rushikesh/website-recon-tool.git
 cd website-recon-tool
-
-# Install Python & create virtual environment
 sudo apt install python3-full
 python3 -m venv myenv
 source myenv/bin/activate
-
-# Install dependencies
+pip install colorama
+pip install wafw00f
 pip install -r requirements.txt
-Alternative (Linux Sudo Install)
-```
+If you're using Linux and need sudo:
 sudo pip install -r requirements.txt
 ```
+
 🚀 Usage
+
 ```
 python website_recon.py
 ```
 Example
-```
 Enter Domain (e.g. example.com): certifiedhacker.com
 ✅ Subdomains → Found related domains.
 🔓 Open Ports → Services & running applications detected.
